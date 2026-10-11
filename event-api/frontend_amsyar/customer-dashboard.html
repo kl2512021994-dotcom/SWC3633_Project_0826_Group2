@@ -30,7 +30,7 @@
       <div class="stat-card"><div class="stat-icon">💳</div><div><span>Total Spent</span><h3 id="stat-spent">MYR 0.00</h3></div></div>
     </div>
 
-    <!-- TAB 1: BROWSE -->
+    <!-- TAB 1: BROWSE & SCHEDULE -->
     <div id="tab-browse" class="tab-content active">
       <div class="card">
         <div class="card-title">
@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: BOOK -->
+    <!-- TAB 2: BOOK TICKETS -->
     <div id="tab-booking" class="tab-content">
       <div class="card">
         <div class="card-title">🛍️ Make a Ticket Booking</div>
@@ -91,7 +91,7 @@
             </div>
             <div class="form-group">
               <label>Quantity</label>
-              <input type="number" id="booking-qty" min="1" max="10" value="1" oninput="calculateTotal()" required>
+              <input type="number" id="booking-qty" min="1" max="1000" value="1" oninput="calculateTotal()" required>
             </div>
             <div class="form-group">
               <label>Total Price (MYR)</label>
@@ -103,7 +103,7 @@
       </div>
 
       <div class="card" id="event-preview-card" style="display:none;">
-        <div class="card-title">📆 Selected Event</div>
+        <div class="card-title">📆 Selected Event Preview</div>
         <div class="event-preview">
           <div class="event-info" id="event-info"></div>
           <div class="mini-cal">
@@ -118,7 +118,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: HISTORY -->
+    <!-- TAB 3: BOOKING HISTORY -->
     <div id="tab-history" class="tab-content">
       <div class="card">
         <div class="card-title">
@@ -165,19 +165,25 @@
     const eventOf = id => loadedEvents.find(e => same(e.event_id, id));
     const ticketOf = id => loadedTickets.find(t => same(t.ticket_type_id, id));
 
-    /* ---------- events ---------- */
+    /* ---------- EVENTS ---------- */
     async function fetchEvents() {
-      loadedEvents = await fetchList('/events');
-      pastLast(loadedEvents, e => isPast(e.event_date), (a, b) => new Date(a.event_date) - new Date(b.event_date));
+      try {
+        loadedEvents = await fetchList('/events');
+        
+        // Move completed/past events to the bottom of the list
+        pastLast(loadedEvents, e => isPast(e.event_date), (a, b) => new Date(a.event_date) - new Date(b.event_date));
 
-      $('sel-evt').innerHTML = '<option value="">-- Choose Event --</option>' +
-        loadedEvents.map(e => {
-          const past = isPast(e.event_date);
-          return `<option value="${e.event_id}" ${past ? 'disabled' : ''}>${esc(e.title)} ${past ? '(Past Event)' : ''}</option>`;
-        }).join('');
+        $('sel-evt').innerHTML = '<option value="">-- Choose Event --</option>' +
+          loadedEvents.map(e => {
+            const past = isPast(e.event_date);
+            return `<option value="${e.event_id}" ${past ? 'disabled' : ''}>${esc(e.title)} ${past ? '(Past Event)' : ''}</option>`;
+          }).join('');
 
-      renderEventsTable(loadedEvents);
-      renderCalendar();
+        renderEventsTable(loadedEvents);
+        renderCalendar();
+      } catch (err) {
+        toast('Failed to load events from server.', 'error');
+      }
     }
 
     function renderEventsTable(data) {
@@ -205,9 +211,13 @@
         return matches && (status === '' || current === status);
       }));
     }
-    function resetCustEventFilter() { $('search-cust-events').value = ''; $('filter-cust-event-status').value = ''; renderEventsTable(loadedEvents); }
 
-    /* ---------- calendar ---------- */
+    function resetCustEventFilter() { 
+      $('search-cust-events').value = '';$('filter-cust-event-status').value = ''; 
+      renderEventsTable(loadedEvents); 
+    }
+
+    /* ---------- CALENDAR ---------- */
     function renderCalendar() {
       const year = currentCalendarDate.getFullYear();
       const month = currentCalendarDate.getMonth();
@@ -244,10 +254,11 @@
       renderCalendar();
     }
 
-    /* ---------- booking ---------- */
-    async function fetchTickets() { loadedTickets = await fetchList('/tickets'); }
+    /* ---------- BOOKING & TICKETS ---------- */
+    async function fetchTickets() { 
+      try { loadedTickets = await fetchList('/tickets'); } catch (err) {} 
+    }
 
-    /** Shows the chosen event's date/venue and a month calendar with its day highlighted. */
     function renderEventPreview(eventId) {
       const card = $('event-preview-card');
       const e = eventId ? eventOf(eventId) : null;
@@ -257,6 +268,7 @@
       const longDate = d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
       const url = gcalUrl(e.title, e.description, e.venue_name, e.event_date);
+      
       $('event-info').innerHTML = `
         <h3>${esc(e.title)}</h3>
         <dl>
@@ -270,6 +282,7 @@
       const year = d.getFullYear(), month = d.getMonth();
       const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
       setText('mini-cal-title', `${names[month]} ${year}`);
+      
       let html = '<div class="cal-day empty"></div>'.repeat(new Date(year, month, 1).getDay());
       for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day++) {
         html += `<div class="cal-day ${day === d.getDate() ? 'selected' : ''}"><div class="cal-day-num">${day}</div></div>`;
@@ -282,15 +295,26 @@
       renderEventPreview(eventId);
       const sel = $('sel-tier');
       sel.disabled = true;
+
       if (!eventId) {
         sel.innerHTML = '<option value="">-- Choose Event First --</option>';
         calculateTotal();
         return;
       }
+
+      const selectedEvt = eventOf(eventId);
+      if (selectedEvt && isPast(selectedEvt.event_date)) {
+        toast("This event has already taken place and tickets cannot be booked.", 'error');
+        $('sel-evt').value = "";
+        sel.innerHTML = '<option value="">-- Choose Event First --</option>';
+        calculateTotal();
+        return;
+      }
+
       const tickets = loadedTickets.filter(t => same(t.event_id, eventId));
       if (tickets.length) {
         sel.innerHTML = '<option value="">-- Choose Ticket Tier --</option>' + tickets.map(t => `
-          <option value="${t.ticket_type_id}" data-price="${t.price}" ${num(t.quantity_available) > 0 ? '' : 'disabled'}>
+          <option value="${t.ticket_type_id}" data-price="${t.price}" data-qty="${t.quantity_available}" ${num(t.quantity_available) > 0 ? '' : 'disabled'}>
             ${esc(t.type_name)} — ${money(t.price)} (${t.quantity_available} left)
           </option>`).join('');
         sel.disabled = false;
@@ -310,24 +334,36 @@
 
     $('form-booking').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const selOpt = $('sel-tier').options[$('sel-tier').selectedIndex];
+      const availQty = num(selOpt ? selOpt.dataset.qty : 0);
+      const qty = num($('booking-qty').value);
+
+      if (qty > availQty) {
+        toast(`Only ${availQty} tickets are available for this tier.`, 'error');
+        return;
+      }
+
       const payload = {
         customer_id: num(currentCustomerId),
         ticket_type_id: num($('sel-tier').value),
-        quantity_booked: num($('booking-qty').value),
+        quantity_booked: qty,
         total_price: parseFloat($('booking-total').value),
         booking_status: 'Upcoming'
       };
+
       try {
         await api('/bookings', { method: 'POST', body: payload });
-        toast('Booking placed successfully!', 'success');
-        $('form-booking').reset();
-        $('sel-tier').disabled = true;
+        toast('🎉 Booking placed successfully!', 'success');
+        $('form-booking').reset();$('sel-tier').disabled = true;
         renderEventPreview(null);
         loadAllData();
-      } catch (err) { toast(`Booking failed: ${err.message}`, 'error'); }
+      } catch (err) { 
+        toast(`Booking failed: ${err.message}`, 'error'); 
+      }
     });
 
-    /* ---------- my bookings ---------- */
+    /* ---------- MY BOOKINGS HISTORY ---------- */
     function bookingInfo(b) {
       const ticket = ticketOf(b.ticket_type_id);
       const evt = ticket ? eventOf(ticket.event_id) : null;
@@ -338,23 +374,30 @@
     }
 
     async function fetchMyBookings() {
-      const all = await fetchList('/bookings');
-      myBookings = all.filter(b => same(b.customer_id, currentCustomerId));
-      pastLast(myBookings, b => b.booking_status === 'Completed' || bookingInfo(b).past);
+      try {
+        const all = await fetchList('/bookings');
+        myBookings = all.filter(b => same(b.customer_id, currentCustomerId));
+        
+        // Sort completed/past bookings to the bottom
+        pastLast(myBookings, b => b.booking_status === 'Completed' || bookingInfo(b).past);
 
-      let upcoming = 0, completed = 0, spent = 0;
-      myBookings.forEach(b => {
-        const x = bookingInfo(b);
-        if (x.status !== 'Cancelled') {
-          x.past ? completed++ : upcoming++;
-          spent += parseFloat(b.total_price || 0);
-        }
-      });
-      setText('stat-my-bookings', myBookings.length);
-      setText('stat-upcoming', upcoming);
-      setText('stat-completed', completed);
-      setText('stat-spent', money(spent));
-      renderMyBookingsTable(myBookings);
+        let upcoming = 0, completed = 0, spent = 0;
+        myBookings.forEach(b => {
+          const x = bookingInfo(b);
+          if (x.status !== 'Cancelled') {
+            x.past ? completed++ : upcoming++;
+            spent += parseFloat(b.total_price || 0);
+          }
+        });
+
+        setText('stat-my-bookings', myBookings.length);
+        setText('stat-upcoming', upcoming);
+        setText('stat-completed', completed);
+        setText('stat-spent', money(spent));
+        renderMyBookingsTable(myBookings);
+      } catch (err) {
+        toast('Failed to load booking history.', 'error');
+      }
     }
 
     function renderMyBookingsTable(data) {
@@ -384,15 +427,21 @@
         return matches && (status === '' || x.status === status);
       }));
     }
-    function resetMyBookingFilter() { $('search-my-bookings').value = ''; $('filter-my-booking-status').value = ''; renderMyBookingsTable(myBookings); }
+
+    function resetMyBookingFilter() { 
+      $('search-my-bookings').value = '';$('filter-my-booking-status').value = ''; 
+      renderMyBookingsTable(myBookings); 
+    }
 
     async function cancelBooking(id) {
-      if (!confirm('Cancel this booking?')) return;
+      if (!confirm('Cancel this booking? This action cannot be undone.')) return;
       try {
         await api(`/bookings/${id}`, { method: 'PUT', body: { booking_status: 'Cancelled' } });
-        toast('Booking cancelled.', 'success');
+        toast('Booking cancelled successfully.', 'success');
         loadAllData();
-      } catch (e) { toast(`Cancel failed: ${e.message}`, 'error'); }
+      } catch (e) { 
+        toast(`Cancel failed: ${e.message}`, 'error'); 
+      }
     }
   </script>
 </body>
