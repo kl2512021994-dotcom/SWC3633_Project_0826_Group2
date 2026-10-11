@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#d92d20">
+  <title>Sign In | Gather</title>
+
+  <style>
+    :root {
+      --primary: #e43d20;
+      --primary-dark: #bd2b18;
+      --accent: #ff7a35;
+      --background: #fff6f0;
+      --text: #292635;
+      --muted: #777382;
+      --border: #e9e2df;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 38px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+      isolation: isolate;
+      background:
+        radial-gradient(ellipse at 12% 8%, rgba(255, 133, 56, .95) 0, transparent 34%),
+        radial-gradient(ellipse at 90% 20%, rgba(255, 105, 42, .9) 0, transparent 34%),
+        radial-gradient(ellipse at 50% 100%, rgba(158, 22, 24, .9) 0, transparent 48%),
+        linear-gradient(135deg, #a91f23 0%, #e33a20 48%, #ff6b2c 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      pointer-events: none;
+      border: 1px solid rgba(255, 220, 180, .28);
+      border-radius: 50%;
+    }
+
+    body::before {
+      width: 420px;
+      height: 420px;
+      top: -250px;
+      left: -130px;
+      box-shadow: 0 0 0 28px rgba(255,255,255,.035), 0 0 0 75px rgba(255,255,255,.025);
+    }
+
+    body::after {
+      width: 330px;
+      height: 330px;
+      right: -180px;
+      bottom: -170px;
+      box-shadow: 0 0 0 35px rgba(255,255,255,.035), 0 0 0 90px rgba(255,255,255,.025);
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .brand-block {
+      margin-bottom: 28px;
+      text-align: center;
+      color: white;
+    }
+
+    .brand {
+      font-size: clamp(34px, 5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1.8px;
+    }
+
+    .brand span {
+      color: #ffd1a5;
+    }
+
+    .brand-tagline {
+      margin-top: 7px;
+      color: rgba(255,255,255,.88);
+      font-size: 14px;
+      letter-spacing: .2px;
+    }
+
+    .form-panel {
+      width: 100%;
+      padding: 38px 40px 32px;
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 22px;
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 24px 70px rgba(91, 17, 18, .25);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 25px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 32px;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin-bottom: 25px;
+      color: var(--muted);
+      line-height: 1.6;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .demo-notice {
+      display: flex;
+      gap: 11px;
+      margin-bottom: 24px;
+      padding: 13px 14px;
+      border: 1px solid #ffd8c7;
+      border-radius: 11px;
+      background: #fff3ec;
+      color: #7d3325;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .notice-icon {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 21px;
+      height: 21px;
+      margin-top: 1px;
+      border: 1.5px solid var(--primary);
+      border-radius: 50%;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: none;
+      background: white;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input::placeholder {
+      color: #aaa5b1;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(228, 61, 32, .12);
+    }
+
+    .password-wrap {
+      position: relative;
+    }
+
+    .password-wrap input {
+      padding-right: 76px;
+    }
+
+    .show-password {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .show-password:hover {
+      color: var(--primary-dark);
+    }
+
+    .submit-button {
+      width: 100%;
+      min-height: 49px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 9px;
+      background: linear-gradient(100deg, #df321d, #f4511e);
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 7px 16px rgba(228, 61, 32, .18);
+      transition: transform .2s, box-shadow .2s, background .2s;
+    }
+
+    .submit-button:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(100deg, #c82d1b, #e74419);
+      box-shadow: 0 10px 20px rgba(228, 61, 32, .25);
+    }
+
+    .submit-button:focus-visible,
+    .show-password:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(228, 61, 32, .35);
+      outline-offset: 3px;
+    }
+
+    .message {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .message.error {
+      display: block;
+      background: #fff0f0;
+      color: #a32323;
+    }
+
+    .message.info {
+      display: block;
+      background: #fff0e8;
+      color: #8b321e;
+    }
+
+    .register-link {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .register-link a {
+      display: inline-block;
+      margin-top: 7px;
+    }
+
+    a:not(.back-link) {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a:not(.back-link):hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    .page-footer {
+      margin-top: 22px;
+      color: rgba(255,255,255,.78);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 25px 14px;
+      }
+
+      .brand-block {
+        margin-bottom: 22px;
+      }
+
+      .brand-tagline {
+        font-size: 12px;
+      }
+
+      .form-panel {
+        padding: 29px 22px 26px;
+        border-radius: 17px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page-shell">
+    <header class="brand-block">
+      <div class="brand">Gather<span>.</span></div>
+      <p class="brand-tagline">Your events. Your people. Your moments.</p>
+    </header>
+
+    <section class="form-panel" aria-labelledby="loginHeading">
+
+      <h1 id="loginHeading">Welcome back</h1>
+      <p class="subtitle">Sign in to continue to your Gather dashboard.</p>
+
+      <div class="demo-notice">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <div>
+          <strong>Development demo:</strong>
+          The supplied API does not appear to provide a login endpoint.
+          This form demonstrates role-based navigation only; it does not
+          verify your identity.
+        </div>
+      </div>
+
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">Email address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="you@example.com"
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter a demo password"
+              autocomplete="current-password"
+              required
+            >
+            <button class="show-password" type="button" id="togglePassword"
+              aria-controls="password" aria-pressed="false">Show</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="role">Dashboard for demonstration</label>
+          <select id="role" name="role" required>
+            <option value="Customer">Customer</option>
+            <option value="Organiser">Organiser / Staff</option>
+            <option value="Administrator">Administrator</option>
+          </select>
+        </div>
+
+        <button class="submit-button" type="submit">Continue to dashboard &rarr;</button>
+
+        <div id="message" class="message" role="alert" aria-live="polite"></div>
+      </form>
+
+      <p class="register-link">
+        New to Gather?<br>
+        <a href="register.html">Create an account</a>
+      </p>
+    </section>
+
+    <footer class="page-footer">Your events. Your people. Your moments.</footer>
+  </main>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+    const message = document.getElementById("message");
+
+    const dashboardRoutes = {
+      Administrator: "admin-dashboard.html",
+      Organiser: "organiser-dashboard.html",
+      Customer: "customer-dashboard.html"
+    };
+
+    togglePassword.addEventListener("click", function () {
+      const isPassword = passwordInput.type === "password";
+      passwordInput.type = isPassword ? "text" : "password";
+      togglePassword.textContent = isPassword ? "Hide" : "Show";
+      togglePassword.setAttribute("aria-pressed", String(isPassword));
+    });
+
+    loginForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = passwordInput.value;
+      const role = document.getElementById("role").value;
+
+      message.className = "message";
+      message.textContent = "";
+
+      if (!email || !password) {
+        message.className = "message error";
+        message.textContent = "Please enter your email and password.";
+        return;
+      }
+
+      const destination = dashboardRoutes[role];
+
+      if (!destination) {
+        message.className = "message error";
+        message.textContent = "Please select a valid dashboard.";
+        return;
+      }
+
+      // Demo only: this is not real authentication.
+      // Never store the password or treat this role as secure.
+      sessionStorage.setItem("gatherDemoEmail", email);
+      sessionStorage.setItem("gatherDemoRole", role);
+
+      window.location.href = destination;
+    });
+  </script>
+</body>
+</html>

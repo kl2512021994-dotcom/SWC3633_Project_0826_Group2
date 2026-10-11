@@ -1,0 +1,448 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#d92d20">
+  <title>Create Account | Gather</title>
+
+  <style>
+    :root {
+      --primary: #e43d20;
+      --primary-dark: #bd2b18;
+      --accent: #ff7a35;
+      --background: #fff6f0;
+      --text: #292635;
+      --muted: #777382;
+      --border: #e9e2df;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 38px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+      isolation: isolate;
+      background:
+        radial-gradient(ellipse at 12% 8%, rgba(255, 133, 56, .95) 0, transparent 34%),
+        radial-gradient(ellipse at 90% 20%, rgba(255, 105, 42, .9) 0, transparent 34%),
+        radial-gradient(ellipse at 50% 100%, rgba(158, 22, 24, .9) 0, transparent 48%),
+        linear-gradient(135deg, #a91f23 0%, #e33a20 48%, #ff6b2c 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      pointer-events: none;
+      border: 1px solid rgba(255, 220, 180, .28);
+      border-radius: 50%;
+    }
+
+    body::before {
+      width: 420px;
+      height: 420px;
+      top: -250px;
+      left: -130px;
+      box-shadow: 0 0 0 28px rgba(255,255,255,.035), 0 0 0 75px rgba(255,255,255,.025);
+    }
+
+    body::after {
+      width: 330px;
+      height: 330px;
+      right: -180px;
+      bottom: -170px;
+      box-shadow: 0 0 0 35px rgba(255,255,255,.035), 0 0 0 90px rgba(255,255,255,.025);
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .brand-block {
+      margin-bottom: 28px;
+      text-align: center;
+      color: white;
+    }
+
+    .brand {
+      font-size: clamp(34px, 5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1.8px;
+    }
+
+    .brand span {
+      color: #ffd1a5;
+    }
+
+    .brand-tagline {
+      margin-top: 7px;
+      color: rgba(255,255,255,.88);
+      font-size: 14px;
+      letter-spacing: .2px;
+    }
+
+    .form-panel {
+      width: 100%;
+      padding: 38px 40px 32px;
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 22px;
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 24px 70px rgba(91, 17, 18, .25);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 25px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      text-align: center;
+      font-size: 32px;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      margin-bottom: 25px;
+      color: var(--muted);
+      line-height: 1.6;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: none;
+      background: white;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input::placeholder {
+      color: #aaa5b1;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(228, 61, 32, .12);
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .submit-button {
+      width: 100%;
+      min-height: 49px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 9px;
+      background: linear-gradient(100deg, #df321d, #f4511e);
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 7px 16px rgba(228, 61, 32, .18);
+      transition: transform .2s, box-shadow .2s, background .2s;
+    }
+
+    .submit-button:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(100deg, #c82d1b, #e74419);
+      box-shadow: 0 10px 20px rgba(228, 61, 32, .25);
+    }
+
+    .submit-button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    .message {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .message.success {
+      display: block;
+      background: #eaf8ef;
+      color: #176c38;
+    }
+
+    .message.error {
+      display: block;
+      background: #fff0f0;
+      color: #a32323;
+    }
+
+    .login-link {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    a:not(.back-link) {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a:not(.back-link):hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    .page-footer {
+      margin-top: 22px;
+      color: rgba(255,255,255,.78);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 25px 14px;
+      }
+
+      .form-panel {
+        padding: 29px 22px 26px;
+        border-radius: 17px;
+      }
+
+      h2 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page-shell">
+    <header class="brand-block">
+      <div class="brand">Gather<span>.</span></div>
+      <p class="brand-tagline">Your events. Your people. Your moments.</p>
+    </header>
+
+    <section class="form-panel">
+      <a class="back-link" href="login.html">&larr; Back to sign in</a>
+
+      <h2>Create account</h2>
+      <p class="subtitle">Join Gather and start discovering events.</p>
+
+      <form id="registerForm">
+        <div class="field">
+          <label for="fullName">Full name</label>
+          <input
+            type="text"
+            id="fullName"
+            name="full_name"
+            placeholder="Enter your full name"
+            autocomplete="name"
+            maxlength="100"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="email">Email address</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            maxlength="254"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Create a password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+          <p class="hint">Use at least 8 characters.</p>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirm password</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirm_password"
+            placeholder="Enter your password again"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+        </div>
+
+        <button class="submit-button" id="submitButton" type="submit">
+          Create account
+        </button>
+
+        <div id="message" class="message" role="status" aria-live="polite"></div>
+      </form>
+
+      <p class="login-link">
+        Already have an account?<br>
+        <a href="login.html">Sign in</a>
+      </p>
+    </section>
+
+    <footer class="page-footer">Your events. Your people. Your moments.</footer>
+  </main>
+
+  <script>
+    const API_URL = "http://localhost/event-api/event-api/users.php";
+
+    const form = document.getElementById("registerForm");
+    const message = document.getElementById("message");
+    const submitButton = document.getElementById("submitButton");
+
+    function showMessage(text, type) {
+      message.className = "message " + type;
+      message.textContent = text;
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const fullName = document.getElementById("fullName").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      message.className = "message";
+      message.textContent = "";
+
+      if (!fullName || !email || !password || !confirmPassword) {
+        showMessage("Please complete all fields.", "error");
+        return;
+      }
+
+      if (password.length < 8) {
+        showMessage("Your password must contain at least 8 characters.", "error");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showMessage("Your passwords do not match.", "error");
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Creating account...";
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            full_name: fullName,
+            email: email,
+            password: password
+          })
+        });
+
+        const responseText = await response.text();
+        let result = null;
+
+        try {
+          result = JSON.parse(responseText);
+        } catch {}
+
+        if (!response.ok) {
+          const errorMessage = result?.message || result?.error || "Registration failed. Please check your details.";
+          showMessage(errorMessage, "error");
+          return;
+        }
+
+        if (!result || result.success === false || result.error) {
+          showMessage(result?.message || result?.error || "The API response could not confirm registration.", "error");
+          return;
+        }
+
+        showMessage(result.message || "Registration request completed. You can now try signing in.", "success");
+        form.reset();
+
+        const loginLink = document.createElement("a");
+        loginLink.href = "login.html";
+        loginLink.textContent = " Go to sign in";
+        loginLink.style.display = "inline-block";
+        loginLink.style.marginTop = "8px";
+        message.appendChild(document.createElement("br"));
+        message.appendChild(loginLink);
+
+      } catch (error) {
+        showMessage("Could not connect to the API. Make sure your PHP server is running.", "error");
+        console.error("Registration request failed:", error);
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Create account";
+      }
+    });
+  </script>
+</body>
+</html>

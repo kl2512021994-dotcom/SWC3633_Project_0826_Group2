@@ -1,0 +1,968 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organiser Dashboard | Gather</title>
+
+  <style>
+    :root {
+      --primary: #6d5ce8;
+      --primary-dark: #5545cc;
+      --background: #f7f7fc;
+      --text: #25243a;
+      --muted: #77768b;
+      --border: #e8e7f0;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--background);
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    .topbar {
+      min-height: 74px;
+      padding: 16px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      color: var(--primary);
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .role-label {
+      padding: 7px 11px;
+      border-radius: 20px;
+      background: #eeeaff;
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .logout {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 225px minmax(0, 1fr);
+      min-height: calc(100vh - 74px);
+    }
+
+    aside {
+      padding: 27px 17px;
+      background: white;
+      border-right: 1px solid var(--border);
+    }
+
+    .side-heading {
+      margin: 5px 10px 14px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    .side-link {
+      display: block;
+      margin-bottom: 5px;
+      padding: 12px;
+      border-radius: 8px;
+      color: #55546a;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .side-link.active,
+    .side-link:hover {
+      background: #f0edff;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    main {
+      min-width: 0;
+      padding: 32px;
+    }
+
+    .page-heading {
+      margin-bottom: 25px;
+    }
+
+    .page-heading h1 {
+      margin-bottom: 9px;
+      font-size: clamp(26px, 4vw, 35px);
+      letter-spacing: -1px;
+    }
+
+    .page-heading p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 17px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      padding: 21px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: white;
+    }
+
+    .stat-card p {
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat-card strong {
+      font-size: 30px;
+    }
+
+    .panel {
+      margin-bottom: 25px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: white;
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .panel-heading h2 {
+      font-size: 21px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 17px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      background: white;
+      color: var(--text);
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px #6d5ce81a;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .primary-button {
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--primary);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary-button:hover {
+      background: var(--primary-dark);
+    }
+
+    .primary-button:disabled {
+      cursor: wait;
+      opacity: 0.6;
+    }
+
+    .secondary-button {
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+    }
+
+    td {
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      margin: 14px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .status.error {
+      color: #a32323;
+    }
+
+    .status.success {
+      color: #176c38;
+    }
+
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-row input {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    @media (max-width: 850px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 15px;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .side-heading {
+        display: none;
+      }
+
+      .side-link {
+        flex-shrink: 0;
+        margin: 0;
+      }
+
+      main {
+        padding: 22px 16px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .panel {
+        padding: 17px;
+      }
+
+      .role-label {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <a href="organiser-dashboard.html" class="brand">Gather.</a>
+
+    <div class="topbar-right">
+      <span class="role-label">ORGANISER / STAFF</span>
+      <span id="accountEmail" class="muted">Organiser</span>
+      <button class="logout" id="logoutButton" type="button">
+        Sign out
+      </button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <p class="side-heading">Workspace</p>
+      <a class="side-link active" href="#overview">Overview</a>
+      <a class="side-link" href="#events">My events</a>
+      <a class="side-link" href="#create-event">Create event</a>
+      <a class="side-link" href="#venues">Venues</a>
+      <a class="side-link" href="#tickets">Tickets</a>
+    </aside>
+
+    <main>
+      <section class="page-heading" id="overview">
+        <h1>Organiser workspace</h1>
+        <p>Manage your events and review available venues and ticket records.</p>
+      </section>
+
+      <section class="stats">
+        <article class="stat-card">
+          <p>Events returned by API</p>
+          <strong id="eventTotal">—</strong>
+        </article>
+
+        <article class="stat-card">
+          <p>Venues returned by API</p>
+          <strong id="venueTotal">—</strong>
+        </article>
+
+        <article class="stat-card">
+          <p>Ticket records returned by API</p>
+          <strong id="ticketTotal">—</strong>
+        </article>
+      </section>
+
+      <section class="panel" id="create-event">
+        <div class="panel-heading">
+          <h2>Create an event</h2>
+        </div>
+
+        <p class="muted">
+          Submit an event to the existing events.php endpoint.
+          The organiser ID must be a valid ID in your database.
+        </p>
+
+        <form id="eventForm">
+          <div class="form-grid" style="margin-top:20px">
+            <div class="field">
+              <label for="title">Event title *</label>
+              <input id="title" name="title" maxlength="200"
+                placeholder="e.g. Creative Arts Festival" required>
+            </div>
+
+            <div class="field">
+              <label for="eventDate">Event date and time *</label>
+              <input id="eventDate" name="event_date"
+                type="datetime-local" required>
+            </div>
+
+            <div class="field">
+              <label for="venueId">Venue *</label>
+              <select id="venueId" name="venue_id" required>
+                <option value="">Load venues first</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="organiserId">Organiser user ID *</label>
+              <input id="organiserId" name="organiser_id"
+                type="number" min="1" step="1"
+                placeholder="Your database user ID" required>
+            </div>
+
+            <div class="field full">
+              <label for="description">Event description</label>
+              <textarea id="description" name="description"
+                maxlength="5000"
+                placeholder="Describe the event, activities, and audience..."></textarea>
+            </div>
+
+            <div class="field full">
+              <button class="primary-button" id="createButton" type="submit">
+                Create event
+              </button>
+            </div>
+          </div>
+
+          <p id="createStatus" class="status" role="status"></p>
+        </form>
+      </section>
+
+      <section class="panel" id="events">
+        <div class="panel-heading">
+          <h2>Events</h2>
+          <button class="secondary-button" id="refreshEvents" type="button">
+            Refresh events
+          </button>
+        </div>
+
+        <div class="search-row">
+          <input id="eventSearch" type="search"
+            placeholder="Search events by title...">
+        </div>
+
+        <p id="eventsStatus" class="status" role="status">
+          Loading events...
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Venue ID</th>
+                <th>Organiser ID</th>
+              </tr>
+            </thead>
+            <tbody id="eventsTable">
+              <tr><td colspan="5" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="venues">
+        <div class="panel-heading">
+          <h2>Available venues</h2>
+          <button class="secondary-button" id="refreshVenues" type="button">
+            Refresh venues
+          </button>
+        </div>
+
+        <p id="venuesStatus" class="status" role="status">
+          Loading venues...
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Venue ID</th>
+                <th>Name</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="venuesTable">
+              <tr><td colspan="3" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="tickets">
+        <div class="panel-heading">
+          <h2>Ticket records</h2>
+          <button class="secondary-button" id="refreshTickets" type="button">
+            Refresh tickets
+          </button>
+        </div>
+
+        <p class="muted">
+          This section displays records from tickets.php.
+          Ticket creation and editing can be added once the required
+          ticket fields in your API are confirmed.
+        </p>
+
+        <p id="ticketsStatus" class="status" role="status">
+          Loading tickets...
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Event ID</th>
+                <th>Ticket details</th>
+              </tr>
+            </thead>
+            <tbody id="ticketsTable">
+              <tr><td colspan="3" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Change this to the directory containing your PHP endpoints.
+    const API_BASE = "http://localhost/event-api/event-api/";
+
+    const EVENTS_API = API_BASE + "/events.php";
+    const VENUES_API = API_BASE + "/venues.php";
+    const TICKETS_API = API_BASE + "/tickets.php";
+
+    const role = sessionStorage.getItem("gatherDemoRole");
+    const email = sessionStorage.getItem("gatherDemoEmail");
+
+    let events = [];
+    let venues = [];
+    let tickets = [];
+
+    // Demo navigation only; this is not a security boundary.
+    if (role !== "Organiser" || !email) {
+      window.location.replace("login.html");
+    } else {
+      document.getElementById("accountEmail").textContent = email;
+    }
+
+    document.getElementById("logoutButton").addEventListener(
+      "click",
+      function () {
+        sessionStorage.removeItem("gatherDemoRole");
+        sessionStorage.removeItem("gatherDemoEmail");
+        sessionStorage.removeItem("gatherUserId");
+        window.location.href = "login.html";
+      }
+    );
+
+    function setStatus(id, message, type = "") {
+      const element = document.getElementById(id);
+      element.className = "status" + (type ? " " + type : "");
+      element.textContent = message;
+    }
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          "Accept": "application/json",
+          ...(options.body ? { "Content-Type": "application/json" } : {}),
+          ...options.headers
+        }
+      });
+
+      const text = await response.text();
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(
+          "The API returned invalid JSON. Check the PHP endpoint."
+        );
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || data.error ||
+          "The request failed with HTTP " + response.status
+        );
+      }
+
+      if (data && !Array.isArray(data) &&
+          (data.success === false || data.error)) {
+        throw new Error(data.message || data.error || "API request failed.");
+      }
+
+      return data;
+    }
+
+    function extractList(data, keys) {
+      if (Array.isArray(data)) return data;
+
+      for (const key of keys) {
+        if (data && Array.isArray(data[key])) return data[key];
+      }
+
+      return null;
+    }
+
+    function getField(record, names, fallback = "—") {
+      for (const name of names) {
+        if (record && record[name] !== undefined &&
+            record[name] !== null && record[name] !== "") {
+          return record[name];
+        }
+      }
+      return fallback;
+    }
+
+    function addCell(row, value) {
+      const cell = document.createElement("td");
+      cell.textContent = value == null ? "—" : String(value);
+      row.appendChild(cell);
+      return cell;
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+
+      return date.toLocaleString();
+    }
+
+    async function loadEvents() {
+      setStatus("eventsStatus", "Loading events...");
+
+      try {
+        const data = await requestJson(EVENTS_API);
+        const list = extractList(data, ["events", "data", "results"]);
+
+        if (!list) {
+          throw new Error("Unexpected events response format.");
+        }
+
+        events = list;
+        document.getElementById("eventTotal").textContent = events.length;
+
+        renderEvents();
+        setStatus("eventsStatus", "Events loaded successfully.", "success");
+      } catch (error) {
+        events = [];
+        document.getElementById("eventTotal").textContent = "—";
+        renderEvents();
+        setStatus("eventsStatus", error.message, "error");
+      }
+    }
+
+    function renderEvents() {
+      const tbody = document.getElementById("eventsTable");
+      tbody.replaceChildren();
+
+      const query = document.getElementById("eventSearch")
+        .value.trim().toLowerCase();
+
+      const filtered = events.filter(event =>
+        String(event.title || "").toLowerCase().includes(query)
+      );
+
+      if (!filtered.length) {
+        const row = tbody.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 5;
+        cell.className = "empty";
+        cell.textContent = "No matching events found.";
+        return;
+      }
+
+      filtered.forEach(event => {
+        const row = tbody.insertRow();
+
+        addCell(row, getField(event, ["event_id", "id"]));
+        addCell(row, getField(event, ["title", "event_name"]));
+        addCell(row, formatDate(event.event_date));
+        addCell(row, getField(event, ["venue_id"]));
+        addCell(row, getField(event, ["organiser_id", "organizer_id"]));
+      });
+    }
+
+    async function loadVenues() {
+      setStatus("venuesStatus", "Loading venues...");
+
+      try {
+        const data = await requestJson(VENUES_API);
+        const list = extractList(data, ["venues", "data", "results"]);
+
+        if (!list) {
+          throw new Error("Unexpected venues response format.");
+        }
+
+        venues = list;
+        document.getElementById("venueTotal").textContent = venues.length;
+
+        renderVenues();
+        populateVenueSelect();
+
+        setStatus("venuesStatus", "Venues loaded successfully.", "success");
+      } catch (error) {
+        venues = [];
+        document.getElementById("venueTotal").textContent = "—";
+        renderVenues();
+        populateVenueSelect();
+        setStatus("venuesStatus", error.message, "error");
+      }
+    }
+
+    function renderVenues() {
+      const tbody = document.getElementById("venuesTable");
+      tbody.replaceChildren();
+
+      if (!venues.length) {
+        const row = tbody.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 3;
+        cell.className = "empty";
+        cell.textContent = "No venues available.";
+        return;
+      }
+
+      venues.forEach(venue => {
+        const row = tbody.insertRow();
+
+        addCell(row, getField(venue, ["venue_id", "id"]));
+        addCell(row, getField(venue, ["venue_name", "name", "title"]));
+
+        const details = [
+          venue.location,
+          venue.address,
+          venue.capacity != null ? "Capacity: " + venue.capacity : null
+        ].filter(Boolean).join(" · ");
+
+        addCell(row, details || "No additional details");
+      });
+    }
+
+    function populateVenueSelect() {
+      const select = document.getElementById("venueId");
+      select.replaceChildren();
+
+      const first = document.createElement("option");
+      first.value = "";
+      first.textContent = venues.length
+        ? "Select a venue"
+        : "No venues loaded";
+
+      select.appendChild(first);
+
+      venues.forEach(venue => {
+        const id = getField(venue, ["venue_id", "id"], "");
+
+        if (id === "") return;
+
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent =
+          getField(venue, ["venue_name", "name", "title"], "Venue") +
+          " (ID: " + id + ")";
+
+        select.appendChild(option);
+      });
+    }
+
+    async function loadTickets() {
+      setStatus("ticketsStatus", "Loading tickets...");
+
+      try {
+        const data = await requestJson(TICKETS_API);
+        const list = extractList(data, ["tickets", "data", "results"]);
+
+        if (!list) {
+          throw new Error("Unexpected tickets response format.");
+        }
+
+        tickets = list;
+        document.getElementById("ticketTotal").textContent = tickets.length;
+
+        renderTickets();
+        setStatus("ticketsStatus", "Ticket records loaded.", "success");
+      } catch (error) {
+        tickets = [];
+        document.getElementById("ticketTotal").textContent = "—";
+        renderTickets();
+        setStatus("ticketsStatus", error.message, "error");
+      }
+    }
+
+    function renderTickets() {
+      const tbody = document.getElementById("ticketsTable");
+      tbody.replaceChildren();
+
+      if (!tickets.length) {
+        const row = tbody.insertRow();
+        const cell = row.insertCell();
+        cell.colSpan = 3;
+        cell.className = "empty";
+        cell.textContent = "No ticket records available.";
+        return;
+      }
+
+      tickets.forEach(ticket => {
+        const row = tbody.insertRow();
+
+        addCell(row, getField(ticket, ["ticket_id", "id"]));
+        addCell(row, getField(ticket, ["event_id"]));
+
+        const details = [
+          ticket.ticket_type || ticket.type,
+          ticket.price != null ? "Price: " + ticket.price : null,
+          ticket.quantity != null ? "Quantity: " + ticket.quantity : null,
+          ticket.available_quantity != null
+            ? "Available: " + ticket.available_quantity : null
+        ].filter(Boolean).join(" · ");
+
+        addCell(row, details || "Ticket details not provided");
+      });
+    }
+
+    document.getElementById("eventSearch").addEventListener(
+      "input", renderEvents
+    );
+
+    document.getElementById("refreshEvents").addEventListener(
+      "click", loadEvents
+    );
+
+    document.getElementById("refreshVenues").addEventListener(
+      "click", loadVenues
+    );
+
+    document.getElementById("refreshTickets").addEventListener(
+      "click", loadTickets
+    );
+
+    document.getElementById("eventForm").addEventListener(
+      "submit", async function (event) {
+        event.preventDefault();
+
+        const title = document.getElementById("title").value.trim();
+        const description =
+          document.getElementById("description").value.trim();
+        const eventDate = document.getElementById("eventDate").value;
+        const venueId = document.getElementById("venueId").value;
+        const organiserId =
+          document.getElementById("organiserId").value.trim();
+
+        if (!title || !eventDate || !venueId || !organiserId) {
+          setStatus(
+            "createStatus",
+            "Please complete all required fields.",
+            "error"
+          );
+          return;
+        }
+
+        if (!Number.isInteger(Number(organiserId)) ||
+            Number(organiserId) < 1) {
+          setStatus(
+            "createStatus",
+            "Enter a valid organiser user ID.",
+            "error"
+          );
+          return;
+        }
+
+        const button = document.getElementById("createButton");
+        button.disabled = true;
+        button.textContent = "Creating...";
+
+        try {
+          // These fields match the event creation fields identified
+          // in the supplied PHP API. Adjust date formatting if needed.
+          const payload = {
+            title: title,
+            description: description,
+            event_date: eventDate.replace("T", " ") + ":00",
+            venue_id: Number(venueId),
+            organiser_id: Number(organiserId)
+          };
+
+          const result = await requestJson(EVENTS_API, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+
+          setStatus(
+            "createStatus",
+            result.message || "Event creation request succeeded.",
+            "success"
+          );
+
+          document.getElementById("eventForm").reset();
+          await loadEvents();
+        } catch (error) {
+          setStatus(
+            "createStatus",
+            "Could not create the event: " + error.message,
+            "error"
+          );
+        } finally {
+          button.disabled = false;
+          button.textContent = "Create event";
+        }
+      }
+    );
+
+    if (role === "Organiser" && email) {
+      loadEvents();
+      loadVenues();
+      loadTickets();
+    }
+  </script>
+</body>
+</html>

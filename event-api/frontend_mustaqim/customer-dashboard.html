@@ -1,0 +1,775 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discover Events | Gather</title>
+
+  <style>
+    :root {
+      --primary: #6d5ce8;
+      --primary-dark: #5545cc;
+      --background: #f7f7fc;
+      --text: #25243a;
+      --muted: #77768b;
+      --border: #e8e7f0;
+      --white: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--background);
+      color: var(--text);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button, a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .topbar {
+      height: 76px;
+      padding: 0 6%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      color: var(--primary);
+      font-size: 29px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav a.active {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .account {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 39px;
+      height: 39px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #eeeaff;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .logout {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 8px;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 36px 24px 60px;
+    }
+
+    .welcome {
+      margin-bottom: 30px;
+    }
+
+    .welcome h1 {
+      margin-bottom: 10px;
+      font-size: clamp(27px, 4vw, 38px);
+      letter-spacing: -1px;
+    }
+
+    .welcome p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .hero {
+      margin-bottom: 35px;
+      padding: 38px;
+      border-radius: 18px;
+      color: white;
+      background:
+        radial-gradient(circle at 85% 15%, #aa9cff 0, transparent 32%),
+        linear-gradient(120deg, #34266e, #6d5ce8);
+    }
+
+    .hero .eyebrow {
+      margin-bottom: 13px;
+      color: #e4dfff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .hero h2 {
+      max-width: 600px;
+      margin-bottom: 12px;
+      font-size: clamp(28px, 4vw, 43px);
+      line-height: 1.15;
+    }
+
+    .hero p {
+      max-width: 550px;
+      margin-bottom: 22px;
+      color: #e8e3ff;
+      line-height: 1.7;
+    }
+
+    .hero button {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 17px;
+      background: white;
+      color: var(--primary-dark);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .section-heading h2 {
+      font-size: 23px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .filters input,
+    .filters select {
+      min-height: 44px;
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      outline: none;
+      background: white;
+    }
+
+    .filters input {
+      flex: 1;
+      min-width: 210px;
+    }
+
+    .filters input:focus,
+    .filters select:focus {
+      border-color: var(--primary);
+    }
+
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .event-card {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: white;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .event-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px #2820440d;
+    }
+
+    .event-banner {
+      min-height: 120px;
+      padding: 20px;
+      display: flex;
+      align-items: flex-end;
+      background: linear-gradient(135deg, #ded7ff, #f2eaff);
+      color: #4936aa;
+    }
+
+    .event-banner span {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .event-body {
+      padding: 20px;
+    }
+
+    .event-body h3 {
+      margin-bottom: 10px;
+      font-size: 19px;
+      overflow-wrap: anywhere;
+    }
+
+    .event-description {
+      min-height: 44px;
+      margin-bottom: 17px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .event-meta {
+      display: grid;
+      gap: 9px;
+      margin-bottom: 19px;
+      color: #57566b;
+      font-size: 13px;
+    }
+
+    .event-actions {
+      display: flex;
+      gap: 9px;
+    }
+
+    .primary-button,
+    .secondary-button {
+      min-height: 40px;
+      padding: 10px 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .primary-button {
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      color: white;
+    }
+
+    .primary-button:hover {
+      background: var(--primary-dark);
+    }
+
+    .secondary-button {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      padding: 35px 20px;
+      border: 1px dashed #d7d3e8;
+      border-radius: 13px;
+      background: white;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .panel {
+      margin-top: 42px;
+      padding: 25px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: white;
+    }
+
+    .panel h2 {
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    .panel p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .status {
+      margin: 15px 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .status.error {
+      color: #a32323;
+    }
+
+    .status.success {
+      color: #176c38;
+    }
+
+    .booking-list {
+      margin-top: 15px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .booking-item {
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      padding: 25px;
+      border-top: 1px solid var(--border);
+      background: white;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 950px) {
+      .event-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .nav {
+        gap: 13px;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .topbar {
+        height: auto;
+        min-height: 70px;
+        padding: 16px 20px;
+        flex-wrap: wrap;
+      }
+
+      .nav {
+        order: 3;
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .account .user-name {
+        display: none;
+      }
+
+      main {
+        padding: 25px 16px 40px;
+      }
+
+      .hero {
+        padding: 25px;
+      }
+
+      .event-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="customer-dashboard.html">Gather.</a>
+
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#events" class="active">Discover</a>
+      <a href="#my-bookings">My bookings</a>
+    </nav>
+
+    <div class="account">
+      <span class="user-name" id="userName">Customer</span>
+      <div class="avatar" id="avatar">C</div>
+      <button class="logout" id="logoutButton" type="button">
+        Sign out
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="welcome">
+      <h1 id="welcomeTitle">Welcome to Gather!</h1>
+      <p>Find your next experience and make it memorable.</p>
+    </section>
+
+    <section class="hero">
+      <p class="eyebrow">Your next experience starts here</p>
+      <h2>Discover events that bring people together.</h2>
+      <p>
+        Explore available events, find something you love,
+        and keep your bookings organized in one place.
+      </p>
+      <button type="button" id="exploreButton">
+        Explore events &darr;
+      </button>
+    </section>
+
+    <section id="events">
+      <div class="section-heading">
+        <h2>Discover events</h2>
+        <span id="eventCount">Loading events...</span>
+      </div>
+
+      <div class="filters">
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search events by title or description..."
+          aria-label="Search events"
+        >
+
+        <select id="sortSelect" aria-label="Sort events">
+          <option value="date">Sort by date</option>
+          <option value="title">Sort by title</option>
+        </select>
+
+        <button
+          class="secondary-button"
+          id="refreshButton"
+          type="button"
+        >
+          Refresh
+        </button>
+      </div>
+
+      <p id="eventStatus" class="status" role="status">
+        Connecting to the events API...
+      </p>
+
+      <div id="eventGrid" class="event-grid"></div>
+    </section>
+
+    <section id="my-bookings" class="panel">
+      <h2>My bookings</h2>
+      <p>
+        Your booking records will appear here when the API can
+        identify the signed-in customer.
+      </p>
+
+      <p id="bookingStatus" class="status">
+        Booking history requires a real user ID from the backend.
+        The current login page is demo-only.
+      </p>
+
+      <div id="bookingList" class="booking-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    Gather Event Ticketing &amp; Venue Booking System
+  </footer>
+
+  <script>
+    // Update these URLs to match your PHP server.
+    const API_BASE = "http://localhost/event-api/event-api/";
+    const EVENTS_API = API_BASE + "/events.php";
+    const BOOKINGS_API = API_BASE + "/bookings.php";
+
+    const role = sessionStorage.getItem("gatherDemoRole");
+    const email = sessionStorage.getItem("gatherDemoEmail");
+
+    const eventGrid = document.getElementById("eventGrid");
+    const eventStatus = document.getElementById("eventStatus");
+    const eventCount = document.getElementById("eventCount");
+    const searchInput = document.getElementById("searchInput");
+    const sortSelect = document.getElementById("sortSelect");
+
+    let events = [];
+
+    // This only checks demo navigation; it is not secure authentication.
+    if (role !== "Customer" || !email) {
+      window.location.replace("login.html");
+    } else {
+      document.getElementById("userName").textContent = email;
+      document.getElementById("avatar").textContent =
+        email.charAt(0).toUpperCase();
+
+      document.getElementById("welcomeTitle").textContent =
+        "Welcome to Gather!";
+    }
+
+    document.getElementById("logoutButton").addEventListener(
+      "click",
+      function () {
+        sessionStorage.removeItem("gatherDemoRole");
+        sessionStorage.removeItem("gatherDemoEmail");
+        sessionStorage.removeItem("gatherUserId");
+        window.location.href = "login.html";
+      }
+    );
+
+    document.getElementById("exploreButton").addEventListener(
+      "click",
+      function () {
+        document.getElementById("events").scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+    );
+
+    document.getElementById("refreshButton").addEventListener(
+      "click",
+      loadEvents
+    );
+
+    searchInput.addEventListener("input", renderEvents);
+    sortSelect.addEventListener("change", renderEvents);
+
+    function setStatus(element, text, type = "") {
+      element.className = "status" + (type ? " " + type : "");
+      element.textContent = text;
+    }
+
+    function getEventArray(data) {
+      // Supports common API response shapes:
+      // [ {...} ], { events: [...] }, or { data: [...] }.
+      if (Array.isArray(data)) return data;
+      if (data && Array.isArray(data.events)) return data.events;
+      if (data && Array.isArray(data.data)) return data.data;
+      return null;
+    }
+
+    function formatDate(value) {
+      if (!value) return "Date to be announced";
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return String(value);
+      }
+
+      return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function renderEvents() {
+      const query = searchInput.value.trim().toLowerCase();
+
+      let filtered = events.filter(function (event) {
+        const title = String(event.title || "").toLowerCase();
+        const description =
+          String(event.description || "").toLowerCase();
+
+        return title.includes(query) || description.includes(query);
+      });
+
+      filtered.sort(function (a, b) {
+        if (sortSelect.value === "title") {
+          return String(a.title || "").localeCompare(
+            String(b.title || "")
+          );
+        }
+
+        const dateA = new Date(a.event_date || 0).getTime();
+        const dateB = new Date(b.event_date || 0).getTime();
+
+        return dateA - dateB;
+      });
+
+      eventGrid.replaceChildren();
+      eventCount.textContent = filtered.length +
+        (filtered.length === 1 ? " event" : " events");
+
+      if (filtered.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = events.length
+          ? "No events match your search. Try another keyword."
+          : "No events were returned by the API yet.";
+
+        eventGrid.appendChild(empty);
+        return;
+      }
+
+      filtered.forEach(function (event) {
+        const card = document.createElement("article");
+        card.className = "event-card";
+
+        const banner = document.createElement("div");
+        banner.className = "event-banner";
+
+        const category = document.createElement("span");
+        category.textContent = "Featured event";
+        banner.appendChild(category);
+
+        const body = document.createElement("div");
+        body.className = "event-body";
+
+        const title = document.createElement("h3");
+        title.textContent = event.title || "Untitled event";
+
+        const description = document.createElement("p");
+        description.className = "event-description";
+        description.textContent = event.description ||
+          "More details will be announced soon.";
+
+        const meta = document.createElement("div");
+        meta.className = "event-meta";
+
+        const date = document.createElement("span");
+        date.textContent = "📅 " + formatDate(event.event_date);
+
+        const venue = document.createElement("span");
+        venue.textContent = "📍 Venue ID: " +
+          (event.venue_id ?? "Not specified");
+
+        meta.append(date, venue);
+
+        const actions = document.createElement("div");
+        actions.className = "event-actions";
+
+        const detailsButton = document.createElement("button");
+        detailsButton.type = "button";
+        detailsButton.className = "secondary-button";
+        detailsButton.textContent = "View details";
+
+        detailsButton.addEventListener("click", function () {
+          alert(
+            "Event: " + (event.title || "Untitled event") +
+            "\nDate: " + formatDate(event.event_date) +
+            "\nVenue ID: " + (event.venue_id ?? "Not specified") +
+            "\n\n" + (event.description || "No description available.")
+          );
+        });
+
+        const bookingButton = document.createElement("button");
+        bookingButton.type = "button";
+        bookingButton.className = "primary-button";
+        bookingButton.textContent = "Booking details";
+
+        bookingButton.addEventListener("click", function () {
+          setStatus(
+            document.getElementById("bookingStatus"),
+            "Event selected: " + (event.title || "Untitled event") +
+            ". To create a real booking, we need the actual user ID, " +
+            "ticket ID, and required fields accepted by bookings.php.",
+            "info"
+          );
+
+          document.getElementById("my-bookings").scrollIntoView({
+            behavior: "smooth"
+          });
+        });
+
+        actions.append(detailsButton, bookingButton);
+        body.append(title, description, meta, actions);
+        card.append(banner, body);
+        eventGrid.appendChild(card);
+      });
+    }
+
+    async function loadEvents() {
+      setStatus(eventStatus, "Loading events from the PHP API...");
+      eventCount.textContent = "Loading...";
+
+      try {
+        const response = await fetch(EVENTS_API, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
+        const text = await response.text();
+        let data;
+
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(
+            "The events API did not return valid JSON. Check events.php."
+          );
+        }
+
+        if (!response.ok) {
+          throw new Error(
+            data.message || data.error || "Could not retrieve events."
+          );
+        }
+
+        const list = getEventArray(data);
+
+        if (!list) {
+          throw new Error(
+            "Unexpected response format. Check the JSON returned by events.php."
+          );
+        }
+
+        events = list;
+
+        setStatus(
+          eventStatus,
+          events.length
+            ? "Events loaded successfully from your API."
+            : "The API is working, but no events have been returned yet.",
+          events.length ? "success" : ""
+        );
+
+        renderEvents();
+      } catch (error) {
+        events = [];
+        renderEvents();
+
+        setStatus(
+          eventStatus,
+          error.message +
+          " Check API_BASE, your PHP server, and CORS settings.",
+          "error"
+        );
+
+        console.error("Could not load events:", error);
+      }
+    }
+
+    // The booking endpoint is configured for the next integration step.
+    // We are not sending a booking request until its required fields
+    // and the real user's ID are confirmed.
+    console.log("Bookings API:", BOOKINGS_API);
+
+    if (role === "Customer" && email) {
+      loadEvents();
+    }
+  </script>
+</body>
+</html>
