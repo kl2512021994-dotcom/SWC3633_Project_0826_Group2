@@ -1,0 +1,1005 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Evently — Organiser</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+    <div class="shell">
+
+        <aside class="side">
+            <div class="brand">EVENT<span>LY</span></div>
+
+            <nav class="nav">
+                <button data-view="overview" onclick="nav('overview')">▦ Overview</button>
+                <button data-view="events" onclick="nav('events')">★ My events</button>
+                <button data-view="tickets" onclick="nav('tickets')">🎟 Tickets</button>
+                <button data-view="bookings" onclick="nav('bookings')">☷ Bookings</button>
+            </nav>
+
+            <div class="side-foot">
+                <button class="btn ghost" style="width:100%" onclick="logout()">Sign out</button>
+            </div>
+        </aside>
+
+        <main class="main">
+
+            <header class="top">
+                <div>
+                    <button class="btn ghost mobile-menu" onclick="$('.side').classList.toggle('open')">☰</button>
+
+                    <h1>Organiser Dashboard</h1>
+
+                    <div class="muted">
+                        Organiser workspace
+                    </div>
+                </div>
+
+                <div class="user">
+                    <div>
+                        <b data-user></b>
+                        <div class="muted" data-role style="font-size:12px"></div>
+                    </div>
+
+                    <div class="avatar" data-avatar></div>
+                </div>
+            </header>
+
+            <div id="notice" class="notice"></div>
+
+            <section id="overview" class="view">
+
+                <div class="grid">
+
+                    <div class="card stat">
+                        My events
+                        <b id="sEvents">—</b>
+                    </div>
+
+                    <div class="card stat">
+                        Ticket types
+                        <b id="sTickets">—</b>
+                    </div>
+
+                    <div class="card stat">
+                        Available seats
+                        <b id="sSeats">—</b>
+                    </div>
+
+                    <div class="card stat">
+                        Related bookings
+                        <b id="sBookings">—</b>
+                    </div>
+
+                </div>
+
+                <div class="section card">
+
+                    <div class="section-head">
+
+                        <div>
+                            <h2>Event List</h2>
+                            <p class="muted">
+                                Overview of your created events.
+                            </p>
+                        </div>
+
+                        <button class="btn secondary" onclick="nav('events')">
+                            Manage Events
+                        </button>
+
+                    </div>
+
+                    <div class="table-wrap" style="margin-top:15px">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Venue</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="overviewEventRows"></tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <section id="events" class="view hide">
+
+                <div class="section-head">
+
+                    <h2>My events</h2>
+
+                    <button class="btn primary" onclick="openEvent()">
+                        + Create event
+                    </button>
+
+                </div>
+
+                <div id="eventGrid" class="event-grid"></div>
+
+            </section>
+
+            <section id="tickets" class="view hide">
+
+                <div class="section-head">
+
+                    <h2>Ticket availability</h2>
+
+                    <button class="btn primary" onclick="openTicket()">
+                        + Add ticket type
+                    </button>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Event</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                                <th>Available</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="ticketRows"></tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+            <section id="bookings" class="view hide">
+
+                <div class="section-head">
+                    <h2>Relevant bookings</h2>
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Event</th>
+                                <th>Ticket</th>
+                                <th>Qty</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="bookingRows"></tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+            <div class="modal" id="eventModal">
+
+                <div class="dialog">
+
+                    <div class="dialog-head">
+
+                        <h2 id="eventTitle">Event</h2>
+
+                        <button class="close" onclick="modal('eventModal',false)">
+                            ×
+                        </button>
+
+                    </div>
+
+                    <form id="eventForm" class="form">
+
+                        <input type="hidden" id="eid">
+
+                        <div>
+                            <label>Title</label>
+                            <input id="etitle" required>
+                        </div>
+
+                        <div>
+                            <label>Date & time</label>
+                            <input id="edate" type="datetime-local" required>
+                        </div>
+
+                        <div>
+                            <label>Venue</label>
+
+                            <select id="evenue" required>
+                            </select>
+                        </div>
+
+                        <div id="statusWrap" class="hide">
+
+                            <label>Status</label>
+
+                            <select id="estatus">
+                                <option>Upcoming</option>
+                                <option>Completed</option>
+                                <option>Cancelled</option>
+                            </select>
+
+                        </div>
+
+                        <div class="full">
+
+                            <label>Description</label>
+
+                            <textarea id="edesc"></textarea>
+
+                        </div>
+
+                        <div class="full">
+
+                            <button class="btn primary">
+                                Save event
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            <div class="modal" id="ticketModal">
+
+                <div class="dialog">
+
+                    <div class="dialog-head">
+
+                        <h2>Ticket type</h2>
+
+                        <button class="close" onclick="modal('ticketModal',false)">
+                            ×
+                        </button>
+
+                    </div>
+
+                    <form id="ticketForm" class="form">
+
+                        <input type="hidden" id="tid">
+
+                        <div id="teventWrap">
+
+                            <label>Event</label>
+
+                            <select id="tevent" required>
+                            </select>
+
+                        </div>
+
+                        <div>
+
+                            <label>Type name</label>
+
+                            <input id="tname" required>
+
+                        </div>
+
+                        <div>
+
+                            <label>Price (RM)</label>
+
+                            <input id="tprice" type="number" step=".01" min="0" required>
+
+                        </div>
+
+                        <div>
+
+                            <label>Quantity available</label>
+
+                            <input id="tqty" type="number" min="0" required>
+
+                        </div>
+
+                        <div class="full">
+
+                            <button class="btn primary">
+                                Save ticket type
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="app.js"></script>
+
+    <script>
+
+        auth('Organiser');
+
+        let E = [];
+        let T = [];
+        let V = [];
+        let B = [];
+
+        const me = +localStorage.user_id;
+
+        async function load() {
+
+            try {
+
+                const [e, t, v, b] = await Promise.all([
+                    api('/events'),
+                    api('/tickets'),
+                    api('/venues'),
+                    api('/bookings')
+                ]);
+
+                E = data(e).filter(
+                    x => +x.organiser_id === me
+                );
+
+                T = data(t).filter(
+                    x => E.some(
+                        a => +a.event_id === +x.event_id
+                    )
+                );
+
+                V = data(v);
+
+                B = data(b).filter(
+                    x => T.some(
+                        t => +t.ticket_type_id === +x.ticket_type_id
+                    )
+                );
+
+                sEvents.textContent = E.length;
+
+                sTickets.textContent = T.length;
+
+                sSeats.textContent = T.reduce(
+                    (s, x) =>
+                        s + (+x.quantity_available || 0),
+                    0
+                );
+
+                sBookings.textContent = B.length;
+
+                overviewEventRows.innerHTML = E.length
+                    ? E.map(x => `
+
+                        <tr>
+
+                            <td>
+                                ${x.event_id}
+                            </td>
+
+                            <td>
+                                ${esc(x.title)}
+                            </td>
+
+                            <td>
+                                ${dt(x.event_date)}
+                            </td>
+
+                            <td>
+                                ${esc(x.venue_name || '-')}
+                            </td>
+
+                            <td>
+                                <span class="pill">
+                                    ${esc(x.status || 'Upcoming')}
+                                </span>
+                            </td>
+
+                        </tr>
+
+                    `).join('')
+                    : `
+
+                        <tr>
+                            <td colspan="5"
+                                style="text-align:center">
+                                No events yet.
+                            </td>
+                        </tr>
+
+                    `;
+
+                evenue.innerHTML = V.length
+                    ? V.map(x => `
+
+                        <option value="${x.venue_id}">
+                            ${esc(x.venue_name)}
+                        </option>
+
+                    `).join('')
+                    : `
+
+                        <option value="">
+                            No venues available
+                        </option>
+
+                    `;
+
+                tevent.innerHTML = E.length
+                    ? E.map(x => `
+
+                        <option value="${x.event_id}">
+                            ${esc(x.title)}
+                        </option>
+
+                    `).join('')
+                    : `
+
+                        <option value="">
+                            No events available
+                        </option>
+
+                    `;
+
+                eventGrid.innerHTML = E.length
+                    ? E.map(x => `
+
+                        <article class="card event">
+
+                            <div class="event-cover">
+                                ${dt(x.event_date)}
+                            </div>
+
+                            <div class="event-body">
+
+                                <h3>
+                                    ${esc(x.title)}
+                                </h3>
+
+                                <p>
+                                    ${esc(
+                        x.description ||
+                        'No description'
+                    )}
+                                </p>
+
+                                <div class="event-meta">
+                                    📍 ${esc(
+                        x.venue_name ||
+                        'No venue'
+                    )}
+                                </div>
+
+                                <div class="event-meta">
+                                    Status:
+                                    <span class="pill">
+                                        ${esc(
+                        x.status ||
+                        'Upcoming'
+                    )}
+                                    </span>
+                                </div>
+
+                                <div class="event-actions">
+
+                                    <button
+                                        class="btn secondary"
+                                        onclick="openEvent(${x.event_id})">
+                                        Edit
+                                    </button>
+
+                                    <button
+                                        class="btn danger"
+                                        onclick="delEvent(${x.event_id})">
+                                        Delete
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    `).join('')
+                    : `
+
+                        <div class="card empty">
+                            No events yet.
+                        </div>
+
+                    `;
+
+                ticketRows.innerHTML = T.length
+                    ? T.map(x => `
+
+                        <tr>
+
+                            <td>
+                                ${x.ticket_type_id}
+                            </td>
+
+                            <td>
+                                ${esc(
+                        E.find(
+                            e =>
+                                +e.event_id ===
+                                +x.event_id
+                        )?.title ||
+                        x.event_id
+                    )}
+                            </td>
+
+                            <td>
+                                ${esc(x.type_name)}
+                            </td>
+
+                            <td>
+                                ${money(x.price)}
+                            </td>
+
+                            <td>
+                                ${x.quantity_available}
+                            </td>
+
+                            <td>
+
+                                <button
+                                    class="btn secondary"
+                                    onclick="openTicket(${x.ticket_type_id})">
+                                    Edit
+                                </button>
+
+                                <button
+                                    class="btn danger"
+                                    onclick="delTicket(${x.ticket_type_id})">
+                                    Delete
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    `).join('')
+                    : `
+
+                        <tr>
+                            <td colspan="6"
+                                style="text-align:center">
+                                No ticket types yet.
+                            </td>
+                        </tr>
+
+                    `;
+
+                bookingRows.innerHTML = B.length
+                    ? B.map(x => `
+
+                        <tr>
+
+                            <td>
+                                ${x.booking_id}
+                            </td>
+
+                            <td>
+                                ${esc(x.customer_name)}
+                            </td>
+
+                            <td>
+                                ${esc(x.event_title)}
+                            </td>
+
+                            <td>
+                                ${esc(x.type_name)}
+                            </td>
+
+                            <td>
+                                ${x.quantity_booked}
+                            </td>
+
+                            <td>
+                                <span class="pill">
+                                    ${esc(x.booking_status)}
+                                </span>
+                            </td>
+
+                        </tr>
+
+                    `).join('')
+                    : `
+
+                        <tr>
+                            <td colspan="6"
+                                style="text-align:center">
+                                No bookings yet.
+                            </td>
+                        </tr>
+
+                    `;
+
+            } catch (e) {
+
+                msg(e.message, false);
+
+            }
+
+        }
+
+        function openEvent(id) {
+
+            const x = E.find(
+                a => +a.event_id === +id
+            );
+
+            eid.value =
+                x?.event_id || '';
+
+            etitle.value =
+                x?.title || '';
+
+            edesc.value =
+                x?.description || '';
+
+            edate.value =
+                x?.event_date
+                    ? String(x.event_date)
+                        .replace(' ', 'T')
+                        .slice(0, 16)
+                    : '';
+
+            if (x) {
+
+                eventTitle.textContent =
+                    'Edit Event';
+
+                evenue.value =
+                    x.venue_id;
+
+                estatus.value =
+                    x.status || 'Upcoming';
+
+            } else {
+
+                eventTitle.textContent =
+                    'Create Event';
+
+                if (V.length) {
+                    evenue.value =
+                        V[0].venue_id;
+                }
+
+                estatus.value =
+                    'Upcoming';
+
+            }
+
+            statusWrap.classList.toggle(
+                'hide',
+                !x
+            );
+
+            modal(
+                'eventModal',
+                true
+            );
+
+        }
+
+        eventForm.onsubmit = async e => {
+
+            e.preventDefault();
+
+            if (!evenue.value) {
+
+                msg(
+                    'Please select a venue.',
+                    false
+                );
+
+                return;
+
+            }
+
+            try {
+
+                const id = eid.value;
+
+                const p = {
+
+                    title:
+                        etitle.value,
+
+                    description:
+                        edesc.value,
+
+                    event_date:
+                        edate.value.replace(
+                            'T',
+                            ' '
+                        ),
+
+                    venue_id:
+                        +evenue.value,
+
+                    organiser_id:
+                        me,
+
+                    status:
+                        id
+                            ? estatus.value
+                            : 'Upcoming'
+
+                };
+
+                await api(
+
+                    '/events' +
+                    (id ? '/' + id : ''),
+
+                    {
+
+                        method:
+                            id
+                                ? 'PUT'
+                                : 'POST',
+
+                        body:
+                            JSON.stringify(p)
+
+                    }
+
+                );
+
+                modal(
+                    'eventModal',
+                    false
+                );
+
+                msg(
+                    'Event saved'
+                );
+
+                load();
+
+            } catch (x) {
+
+                msg(
+                    x.message,
+                    false
+                );
+
+            }
+
+        };
+
+        async function delEvent(id) {
+
+            if (
+                confirm(
+                    'Delete this event?'
+                )
+            ) {
+
+                try {
+
+                    await api(
+
+                        '/events/' + id,
+
+                        {
+                            method:
+                                'DELETE'
+                        }
+
+                    );
+
+                    msg(
+                        'Event deleted'
+                    );
+
+                    load();
+
+                } catch (e) {
+
+                    msg(
+                        e.message,
+                        false
+                    );
+
+                }
+
+            }
+
+        }
+
+        function openTicket(id) {
+
+            const x = T.find(
+                a =>
+                    +a.ticket_type_id ===
+                    +id
+            );
+
+            tid.value =
+                x?.ticket_type_id || '';
+
+            tname.value =
+                x?.type_name || '';
+
+            tprice.value =
+                x?.price || '';
+
+            tqty.value =
+                x?.quantity_available ?? '';
+
+            if (x) {
+
+                tevent.value =
+                    x.event_id;
+
+            } else if (E.length) {
+
+                tevent.value =
+                    E[0].event_id;
+
+            }
+
+            teventWrap.classList.toggle(
+                'hide',
+                !!x
+            );
+
+            modal(
+                'ticketModal',
+                true
+            );
+
+        }
+
+        ticketForm.onsubmit = async e => {
+
+            e.preventDefault();
+
+            if (!tevent.value) {
+
+                msg(
+                    'Please create an event first.',
+                    false
+                );
+
+                return;
+
+            }
+
+            try {
+
+                const id =
+                    tid.value;
+
+                const p = {
+
+                    event_id:
+                        +tevent.value,
+
+                    type_name:
+                        tname.value,
+
+                    price:
+                        +tprice.value,
+
+                    quantity_available:
+                        +tqty.value
+
+                };
+
+                await api(
+
+                    '/tickets' +
+                    (id ? '/' + id : ''),
+
+                    {
+
+                        method:
+                            id
+                                ? 'PUT'
+                                : 'POST',
+
+                        body:
+                            JSON.stringify(p)
+
+                    }
+
+                );
+
+                modal(
+                    'ticketModal',
+                    false
+                );
+
+                msg(
+                    'Ticket type saved'
+                );
+
+                load();
+
+            } catch (x) {
+
+                msg(
+                    x.message,
+                    false
+                );
+
+            }
+
+        };
+
+        async function delTicket(id) {
+
+            if (
+                confirm(
+                    'Delete ticket type?'
+                )
+            ) {
+
+                try {
+
+                    await api(
+
+                        '/tickets/' + id,
+
+                        {
+                            method:
+                                'DELETE'
+                        }
+
+                    );
+
+                    msg(
+                        'Ticket type deleted'
+                    );
+
+                    load();
+
+                } catch (e) {
+
+                    msg(
+                        e.message,
+                        false
+                    );
+
+                }
+
+            }
+
+        }
+
+        nav('overview');
+
+        load();
+
+    </script>
+
+</body>
+
+</html>

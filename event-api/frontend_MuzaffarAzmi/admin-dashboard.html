@@ -1,0 +1,527 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Evently — Administrator</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+    <div class="shell">
+        <aside class="side">
+            <div class="brand">EVENT<span>LY</span></div>
+
+            <nav class="nav">
+                <button data-view="overview" onclick="nav('overview')">▦ Overview</button>
+                <button data-view="users" onclick="nav('users')">👥 Users</button>
+                <button data-view="venues" onclick="nav('venues')">⌂ Venues</button>
+                <button data-view="records" onclick="nav('records')">☷ System records</button>
+            </nav>
+
+            <div class="side-foot">
+                <button class="btn ghost" style="width:100%" onclick="logout()">Sign out</button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="top">
+                <div>
+                    <button class="btn ghost mobile-menu" onclick="$('.side').classList.toggle('open')">☰</button>
+                    <h1>Administration</h1>
+                    <div class="muted">Administrator workspace</div>
+                </div>
+
+                <div class="user">
+                    <div>
+                        <b data-user></b>
+                        <div class="muted" data-role style="font-size:12px"></div>
+                    </div>
+                    <div class="avatar" data-avatar></div>
+                </div>
+            </header>
+
+            <div id="notice" class="notice"></div>
+
+            <section id="overview" class="view">
+                <div class="grid">
+                    <div class="card stat">
+                        Users
+                        <b id="sUsers">—</b>
+                    </div>
+
+                    <div class="card stat">
+                        Events
+                        <b id="sEvents">—</b>
+                    </div>
+
+                    <div class="card stat">
+                        Venues
+                        <b id="sVenues">—</b>
+                    </div>
+
+                    <div class="card stat">
+                        Bookings
+                        <b id="sBookings">—</b>
+                    </div>
+                </div>
+
+                <div class="section card">
+                    <div class="section-head">
+                        <div>
+                            <h2>User List</h2>
+                            <p class="muted">Overview of registered users in the system.</p>
+                        </div>
+
+                        <button class="btn secondary" onclick="nav('users')">
+                            Manage Users
+                        </button>
+                    </div>
+
+                    <div class="table-wrap" style="margin-top:15px">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="overviewUserRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="users" class="view hide">
+                <div class="section-head">
+                    <h2>User management</h2>
+
+                    <button class="btn primary" onclick="openUser()">
+                        + Add user
+                    </button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="userRows"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="venues" class="view hide">
+                <div class="section-head">
+                    <h2>Venue management</h2>
+
+                    <button class="btn primary" onclick="openVenue()">
+                        + Add venue
+                    </button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Venue</th>
+                                <th>Capacity</th>
+                                <th>Phone</th>
+                                <th>Address</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="venueRows"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="records" class="view hide">
+                <div class="section-head">
+                    <h2>System records</h2>
+                </div>
+
+                <div class="card">
+                    <h2>Events</h2>
+
+                    <div class="table-wrap" style="margin-top:12px">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Venue</th>
+                                    <th>Organiser</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="eventRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card section">
+                    <h2>Bookings</h2>
+
+                    <div class="table-wrap" style="margin-top:12px">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Event</th>
+                                    <th>Ticket</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="bookingRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <div class="modal" id="userModal">
+                <div class="dialog">
+                    <div class="dialog-head">
+                        <h2 id="userTitle">User</h2>
+                        <button class="close" onclick="modal('userModal', false)">×</button>
+                    </div>
+
+                    <form id="userForm" class="form">
+                        <input type="hidden" id="uid">
+
+                        <div>
+                            <label>Full name</label>
+                            <input id="uname" required>
+                        </div>
+
+                        <div>
+                            <label>Email</label>
+                            <input id="uemail" type="email" required>
+                        </div>
+
+                        <div id="passWrap">
+                            <label>Password</label>
+                            <input id="upass">
+                        </div>
+
+                        <div>
+                            <label>Role</label>
+                            <select id="urole">
+                                <option>Administrator</option>
+                                <option>Organiser</option>
+                                <option>Customer</option>
+                            </select>
+                        </div>
+
+                        <div class="full">
+                            <button class="btn primary">Save user</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="modal" id="venueModal">
+                <div class="dialog">
+                    <div class="dialog-head">
+                        <h2>Venue</h2>
+                        <button class="close" onclick="modal('venueModal', false)">×</button>
+                    </div>
+
+                    <form id="venueForm" class="form">
+                        <input type="hidden" id="vid">
+
+                        <div>
+                            <label>Venue name</label>
+                            <input id="vname" required>
+                        </div>
+
+                        <div>
+                            <label>Capacity</label>
+                            <input id="vcap" type="number" min="1" required>
+                        </div>
+
+                        <div>
+                            <label>Phone</label>
+                            <input id="vphone">
+                        </div>
+
+                        <div class="full">
+                            <label>Address</label>
+                            <textarea id="vaddress" required></textarea>
+                        </div>
+
+                        <div class="full">
+                            <button class="btn primary">Save venue</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+
+    <script>
+        auth('Administrator');
+
+        let U = [];
+        let V = [];
+
+        async function load() {
+            try {
+                const [u, v, e, b] = await Promise.all([
+                    api('/users'),
+                    api('/venues'),
+                    api('/events'),
+                    api('/bookings')
+                ]);
+
+                U = data(u);
+                V = data(v);
+
+                const E = data(e);
+                const B = data(b);
+
+                sUsers.textContent = U.length;
+                sVenues.textContent = V.length;
+                sEvents.textContent = E.length;
+                sBookings.textContent = B.length;
+
+                overviewUserRows.innerHTML = U.map(x => `
+                    <tr>
+                        <td>${x.user_id}</td>
+                        <td>${esc(x.full_name)}</td>
+                        <td>${esc(x.email)}</td>
+                        <td><span class="pill">${esc(x.role)}</span></td>
+                        <td>${dt(x.created_at)}</td>
+                    </tr>
+                `).join('');
+
+                userRows.innerHTML = U.map(x => `
+                    <tr>
+                        <td>${x.user_id}</td>
+                        <td>${esc(x.full_name)}</td>
+                        <td>${esc(x.email)}</td>
+                        <td><span class="pill">${esc(x.role)}</span></td>
+                        <td>${dt(x.created_at)}</td>
+                        <td>
+                            <button class="btn secondary"
+                                    onclick="openUser(${x.user_id})">
+                                Edit
+                            </button>
+
+                            <button class="btn danger"
+                                    onclick="delUser(${x.user_id})">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                venueRows.innerHTML = V.map(x => `
+                    <tr>
+                        <td>${x.venue_id}</td>
+                        <td>${esc(x.venue_name)}</td>
+                        <td>${x.capacity}</td>
+                        <td>${esc(x.contact_phone || '-')}</td>
+                        <td>${esc(x.address)}</td>
+                        <td>
+                            <button class="btn secondary"
+                                    onclick="openVenue(${x.venue_id})">
+                                Edit
+                            </button>
+
+                            <button class="btn danger"
+                                    onclick="delVenue(${x.venue_id})">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                eventRows.innerHTML = E.map(x => `
+                    <tr>
+                        <td>${x.event_id}</td>
+                        <td>${esc(x.title)}</td>
+                        <td>${dt(x.event_date)}</td>
+                        <td>${esc(x.venue_name)}</td>
+                        <td>${esc(x.organiser_name)}</td>
+                    </tr>
+                `).join('');
+
+                bookingRows.innerHTML = B.map(x => `
+                    <tr>
+                        <td>${x.booking_id}</td>
+                        <td>${esc(x.customer_name)}</td>
+                        <td>${esc(x.event_title)}</td>
+                        <td>${esc(x.type_name)}</td>
+                        <td>${money(x.total_price)}</td>
+                        <td>
+                            <span class="pill">${esc(x.booking_status)}</span>
+                        </td>
+                    </tr>
+                `).join('');
+
+            } catch (e) {
+                msg(e.message, false);
+            }
+        }
+
+        function openUser(id) {
+            const x = U.find(a => +a.user_id === +id);
+
+            uid.value = x?.user_id || '';
+            uname.value = x?.full_name || '';
+            uemail.value = x?.email || '';
+            upass.value = '';
+            urole.value = x?.role || 'Customer';
+
+            passWrap.classList.toggle('hide', !!x);
+
+            if (x) {
+                userTitle.textContent = 'Edit User';
+            } else {
+                userTitle.textContent = 'Add User';
+            }
+
+            modal('userModal', true);
+        }
+
+        userForm.onsubmit = async e => {
+            e.preventDefault();
+
+            try {
+                const id = uid.value;
+
+                const p = {
+                    full_name: uname.value,
+                    email: uemail.value,
+                    role: urole.value
+                };
+
+                if (!id) {
+                    p.password = upass.value || 'password123';
+                }
+
+                await api(
+                    '/users' + (id ? '/' + id : ''),
+                    {
+                        method: id ? 'PUT' : 'POST',
+                        body: JSON.stringify(p)
+                    }
+                );
+
+                modal('userModal', false);
+                msg('User saved');
+                load();
+
+            } catch (x) {
+                msg(x.message, false);
+            }
+        };
+
+        async function delUser(id) {
+            if (confirm('Delete this user?')) {
+                try {
+                    await api(
+                        '/users/' + id,
+                        {
+                            method: 'DELETE'
+                        }
+                    );
+
+                    msg('User deleted');
+                    load();
+
+                } catch (e) {
+                    msg(e.message, false);
+                }
+            }
+        }
+
+        function openVenue(id) {
+            const x = V.find(a => +a.venue_id === +id);
+
+            vid.value = x?.venue_id || '';
+            vname.value = x?.venue_name || '';
+            vcap.value = x?.capacity || '';
+            vphone.value = x?.contact_phone || '';
+            vaddress.value = x?.address || '';
+
+            modal('venueModal', true);
+        }
+
+        venueForm.onsubmit = async e => {
+            e.preventDefault();
+
+            try {
+                const id = vid.value;
+
+                await api(
+                    '/venues' + (id ? '/' + id : ''),
+                    {
+                        method: id ? 'PUT' : 'POST',
+
+                        body: JSON.stringify({
+                            venue_name: vname.value,
+                            capacity: +vcap.value,
+                            contact_phone: vphone.value,
+                            address: vaddress.value
+                        })
+                    }
+                );
+
+                modal('venueModal', false);
+                msg('Venue saved');
+                load();
+
+            } catch (x) {
+                msg(x.message, false);
+            }
+        };
+
+        async function delVenue(id) {
+            if (confirm('Delete this venue?')) {
+                try {
+                    await api(
+                        '/venues/' + id,
+                        {
+                            method: 'DELETE'
+                        }
+                    );
+
+                    msg('Venue deleted');
+                    load();
+
+                } catch (e) {
+                    msg(e.message, false);
+                }
+            }
+        }
+
+        nav('overview');
+        load();
+    </script>
+
+</body>
+
+</html>

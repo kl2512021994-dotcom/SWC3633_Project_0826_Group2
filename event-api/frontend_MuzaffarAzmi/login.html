@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Evently — Sign in</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+    <div class="login-page">
+        <section class="hero">
+            <div class="brand">EVENT<span>LY</span></div>
+            <h1>Discover. Book.<br>Experience.</h1>
+            <p style="max-width:520px;color:#ddd6fe;font-size:18px">Event ticketing and venue booking website.</p>
+        </section>
+        <main class="auth">
+            <div class="auth-card">
+                <h2>Welcome back</h2>
+                <p class="muted">Sign in to continue to your dashboard.</p>
+                <div id="notice" class="notice"></div>
+                <form id="login" class="form">
+                    <div class="field"><label>Email</label><input id="email" type="email" required
+                            placeholder="you@example.com"></div>
+                    <div class="field"><label>Password</label><input id="password" type="password" required
+                            placeholder="Enter password"></div><button class="btn primary">Sign in</button>
+                </form>
+                <div class="link">New customer? <a href="register.html">Create an account</a></div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>if (localStorage.role) route(localStorage.role); $('#login').onsubmit = async e => {e.preventDefault(); try {const users = data(await api('/users')); const u = users.find(x => x.email === $('#email').value.trim() && x.password === $('#password').value); if (!u) throw new Error('Invalid email or password.'); localStorage.user_id = u.user_id; localStorage.full_name = u.full_name; localStorage.role = u.role; route(u.role)} catch (x) {msg(x.message, false)} };</script>
+</body>
+
+</html>

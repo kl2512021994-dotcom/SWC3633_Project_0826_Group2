@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Evently — Customer</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+    <div class="shell">
+        <aside class="side">
+            <div class="brand">EVENT<span>LY</span></div>
+            <nav class="nav"><button data-view="discover" onclick="nav('discover')">✦ Discover</button><button
+                    data-view="bookings" onclick="nav('bookings')">🎟 My bookings</button><button data-view="profile"
+                    onclick="nav('profile')">● Account</button></nav>
+            <div class="side-foot"><button class="btn ghost" style="width:100%" onclick="logout()">Sign out</button>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="top">
+                <div><button class="btn ghost mobile-menu" onclick="$('.side').classList.toggle('open')">☰</button>
+                    <h1>Find Your Next Experience</h1>
+                    <div class="muted">Customer workspace</div>
+                </div>
+                <div class="user">
+                    <div><b data-user></b>
+                        <div class="muted" data-role style="font-size:12px"></div>
+                    </div>
+                    <div class="avatar" data-avatar></div>
+                </div>
+            </header>
+            <div id="notice" class="notice"></div>
+            <section id="discover" class="view">
+                <div class="section-head">
+                    <div>
+                        <h2>Discover events</h2>
+                        <div class="muted">Browse events and check ticket availability.</div>
+                    </div>
+                    <div class="toolbar"><input id="search" placeholder="Search events…" oninput="renderEvents()"></div>
+                </div>
+                <div id="eventGrid" class="event-grid"></div>
+            </section>
+            <section id="bookings" class="view hide">
+                <div class="section-head">
+                    <div>
+                        <h2>My bookings</h2>
+                        <div class="muted">View booking details, status, cancellation and calendar export.</div>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Booking</th>
+                                <th>Event</th>
+                                <th>Ticket</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingRows"></tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="profile" class="view hide">
+                <div class="card" style="max-width:650px">
+                    <h2>Account</h2>
+                    <p class="muted">Signed in customer information.</p>
+                    <div class="form">
+                        <div><label>Name</label><input id="pname" disabled></div>
+                        <div><label>Email</label><input id="pemail" disabled></div>
+                        <div><label>Role</label><input value="Customer" disabled></div>
+                    </div>
+                </div>
+            </section>
+            <div class="modal" id="bookModal">
+                <div class="dialog">
+                    <div class="dialog-head">
+                        <h2>Book tickets</h2><button class="close" onclick="modal('bookModal',false)">×</button>
+                    </div>
+                    <div id="bookInfo" class="card" style="margin-top:14px"></div>
+                    <form id="bookForm" class="form"><input id="bevent" type="hidden">
+                        <div class="full"><label>Ticket type</label><select id="bticket" required
+                                onchange="quote()"></select></div>
+                        <div><label>Quantity</label><input id="bqty" type="number" min="1" value="1" required
+                                oninput="quote()"></div>
+                        <div><label>Estimated total</label><input id="btotal" disabled></div>
+                        <div class="full"><button class="btn primary">Confirm booking</button></div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+    <script>auth('Customer'); let E = [], T = [], B = [], U = []; const me = +localStorage.user_id; async function load() {try {const [e, t, b, u] = await Promise.all([api('/events'), api('/tickets'), api('/bookings'), api('/users/' + me)]); E = data(e); T = data(t); B = data(b).filter(x => +x.customer_id === me); const user = u.data || {}; pname.value = user.full_name || localStorage.full_name; pemail.value = user.email || ''; renderEvents(); renderBookings()} catch (e) {msg(e.message, false)} } function renderEvents() {const q = (search?.value || '').toLowerCase(); const list = E.filter(x => (x.title + ' ' + (x.description || '') + ' ' + x.venue_name).toLowerCase().includes(q)); eventGrid.innerHTML = list.length ? list.map(x => {const ts = T.filter(t => +t.event_id === +x.event_id), avail = ts.reduce((s, t) => s + (+t.quantity_available || 0), 0); return `<article class="card event"><div class="event-cover">${dt(x.event_date)}</div><div class="event-body"><h3>${esc(x.title)}</h3><p>${esc(x.description || '')}</p><div class="event-meta">📍 ${esc(x.venue_name)}</div><div class="event-meta">🎟 ${avail} tickets available</div><div class="event-actions"><button class="btn primary" ${avail ? '' : 'disabled'} onclick="openBook(${x.event_id})">Book now</button><button class="btn secondary" onclick="calendar(${x.event_id})">Add to calendar</button></div></div></article>`}).join('') : '<div class="card empty">No matching events.</div>'} function renderBookings() {bookingRows.innerHTML = B.length ? B.map(x => {const cancelled = x.booking_status === 'Cancelled'; return `<tr><td>#${x.booking_id}</td><td>${esc(x.event_title)}</td><td>${esc(x.type_name)}</td><td>${x.quantity_booked}</td><td>${money(x.total_price)}</td><td><span class="pill">${x.booking_status}</span></td><td>${cancelled ? '—' : `<button class="btn secondary" onclick="calendarForBooking(${x.ticket_type_id})">Calendar</button> <button class="btn danger" onclick="cancelBooking(${x.booking_id},${x.ticket_type_id},${x.quantity_booked})">Cancel</button>`}</td></tr>`}).join('') : '<tr><td colspan="7" class="empty">No bookings yet.</td></tr>'} function openBook(id) {const e = E.find(x => +x.event_id === +id), ts = T.filter(x => +x.event_id === +id && +x.quantity_available > 0); bevent.value = id; bookInfo.innerHTML = `<b>${esc(e.title)}</b><div class="muted">${dt(e.event_date)} · ${esc(e.venue_name)}</div>`; bticket.innerHTML = ts.map(x => `<option value="${x.ticket_type_id}">${esc(x.type_name)} — ${money(x.price)} (${x.quantity_available} left)</option>`).join(''); bqty.value = 1; quote(); modal('bookModal')} function quote() {const t = T.find(x => +x.ticket_type_id === +bticket.value); btotal.value = t ? money(+t.price * (+bqty.value || 0)) : '—'} bookForm.onsubmit = async e => {e.preventDefault(); try {const t = T.find(x => +x.ticket_type_id === +bticket.value), qty = +bqty.value; if (!t || qty < 1 || qty > +t.quantity_available) throw new Error('Choose a valid quantity within available stock.'); await api('/bookings', {method: 'POST', body: JSON.stringify({customer_id: me, ticket_type_id: +bticket.value, quantity_booked: qty})}); modal('bookModal', false); msg('Booking confirmed'); load()} catch (x) {msg(x.message, false)} }; async function cancelBooking(id, tid, qty) {if (!confirm('Cancel this booking?')) return; try {await api('/bookings/' + id, {method: 'DELETE'}); const t = T.find(x => +x.ticket_type_id === +tid); if (t) await api('/tickets/' + tid, {method: 'PUT', body: JSON.stringify({type_name: t.type_name, price: +t.price, quantity_available: +t.quantity_available + qty})}); msg('Booking cancelled'); load()} catch (e) {msg(e.message, false)} } async function calendar(eventId) {try {const j = await api('/events/' + eventId + '/calendar'); const link = j.calendar_integration?.google_calendar_link; if (!link) throw new Error('Calendar link unavailable'); window.open(link, '_blank', 'noopener')} catch (e) {msg(e.message, false)} } function calendarForBooking(tid) {const t = T.find(x => +x.ticket_type_id === +tid); if (t) calendar(t.event_id)}; nav('discover'); load();</script>
+</body>
+
+</html>
