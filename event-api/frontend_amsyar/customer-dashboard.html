@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard - Event Ticketing System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="customer">
+
+  <header class="app-header">
+    <div class="brand">🎟️ Customer Portal &amp; Ticket Booking</div>
+    <div class="user-box">
+      <span>Welcome, <strong id="lbl-name">Customer</strong></span>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <nav class="navbar">
+    <button class="nav-link active" onclick="switchTab('browse', this)">🔍 Browse &amp; Schedule</button>
+    <button class="nav-link" onclick="switchTab('booking', this)">🛍️ Book Tickets</button>
+    <button class="nav-link" onclick="switchTab('history', this)">📖 My Bookings &amp; History</button>
+  </nav>
+
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">🎟️</div><div><span>Total Bookings</span><h3 id="stat-my-bookings">0</h3></div></div>
+      <div class="stat-card"><div class="stat-icon">⏳</div><div><span>Upcoming Events</span><h3 id="stat-upcoming">0</h3></div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div><span>Completed Events</span><h3 id="stat-completed">0</h3></div></div>
+      <div class="stat-card"><div class="stat-icon">💳</div><div><span>Total Spent</span><h3 id="stat-spent">MYR 0.00</h3></div></div>
+    </div>
+
+    <!-- TAB 1: BROWSE -->
+    <div id="tab-browse" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <span>📅 Browse Available Events</span>
+          <div class="filter-group">
+            <select id="filter-cust-event-status" class="select-filter" onchange="filterCustEvents()">
+              <option value="">All Events</option>
+              <option value="Upcoming">Upcoming</option>
+              <option value="Past">Past Events</option>
+            </select>
+            <input type="text" id="search-cust-events" class="search-bar" placeholder="🔍 Search events..." onkeyup="filterCustEvents()">
+            <button class="btn btn-secondary" onclick="resetCustEventFilter()">Clear</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Event</th><th>Date &amp; Time</th><th>Venue</th><th>Actions</th></tr></thead>
+            <tbody id="tbl-events"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="calendar-header-nav">
+          <h2>📆 Monthly Schedule Calendar</h2>
+          <div>
+            <button class="btn btn-secondary" onclick="changeMonth(-1)">&lt; Prev</button>
+            <span id="cal-month-year"></span>
+            <button class="btn btn-secondary" onclick="changeMonth(1)">Next &gt;</button>
+          </div>
+        </div>
+        <p class="hint">Click any event badge below to add it to Google Calendar.</p>
+        <div class="calendar-grid">
+          <div class="cal-header">Sun</div><div class="cal-header">Mon</div><div class="cal-header">Tue</div>
+          <div class="cal-header">Wed</div><div class="cal-header">Thu</div><div class="cal-header">Fri</div><div class="cal-header">Sat</div>
+        </div>
+        <div class="calendar-grid" id="cal-grid" style="margin-top: 6px;"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: BOOK -->
+    <div id="tab-booking" class="tab-content">
+      <div class="card">
+        <div class="card-title">🛍️ Make a Ticket Booking</div>
+        <form id="form-booking" class="form-panel">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Select Event</label>
+              <select id="sel-evt" onchange="handleEventSelect(this.value)" required>
+                <option value="">-- Choose Event --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ticket Tier &amp; Availability</label>
+              <select id="sel-tier" onchange="calculateTotal()" disabled required>
+                <option value="">-- Choose Event First --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Quantity</label>
+              <input type="number" id="booking-qty" min="1" max="10" value="1" oninput="calculateTotal()" required>
+            </div>
+            <div class="form-group">
+              <label>Total Price (MYR)</label>
+              <input type="text" id="booking-total" value="0.00" readonly style="font-weight: 700;">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success" id="btn-book">Confirm &amp; Pay</button>
+        </form>
+      </div>
+
+      <div class="card" id="event-preview-card" style="display:none;">
+        <div class="card-title">📆 Selected Event</div>
+        <div class="event-preview">
+          <div class="event-info" id="event-info"></div>
+          <div class="mini-cal">
+            <div class="mini-cal-title" id="mini-cal-title"></div>
+            <div class="calendar-grid">
+              <div class="cal-header">Sun</div><div class="cal-header">Mon</div><div class="cal-header">Tue</div>
+              <div class="cal-header">Wed</div><div class="cal-header">Thu</div><div class="cal-header">Fri</div><div class="cal-header">Sat</div>
+            </div>
+            <div class="calendar-grid" id="mini-cal-grid" style="margin-top: 4px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: HISTORY -->
+    <div id="tab-history" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>📖 My Booking Details &amp; History</span>
+          <div class="filter-group">
+            <select id="filter-my-booking-status" class="select-filter" onchange="filterMyBookings()">
+              <option value="">All Statuses</option>
+              <option value="Upcoming">Upcoming</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <input type="text" id="search-my-bookings" class="search-bar" placeholder="🔍 Search my bookings..." onkeyup="filterMyBookings()">
+            <button class="btn btn-secondary" onclick="resetMyBookingFilter()">Clear</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Booking</th><th>Event</th><th>Tier</th><th>Qty</th><th>Total Paid</th><th>Status</th><th>Booked On</th><th>Actions</th></tr></thead>
+            <tbody id="tbl-my-bookings"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let currentCustomerId = null;
+    let loadedEvents = [], loadedTickets = [], myBookings = [];
+    let currentCalendarDate = new Date();
+
+    window.addEventListener('DOMContentLoaded', () => {
+      currentCustomerId = localStorage.getItem('user_id');
+      if (!currentCustomerId) { requireRole([], 'Customer'); return; }
+      if (requireRole(['Customer', 'Administrator'], 'Customer')) loadAllData();
+    });
+
+    async function loadAllData() {
+      await fetchEvents();
+      await fetchTickets();
+      fetchMyBookings();
+    }
+
+    const eventOf = id => loadedEvents.find(e => same(e.event_id, id));
+    const ticketOf = id => loadedTickets.find(t => same(t.ticket_type_id, id));
+
+    /* ---------- events ---------- */
+    async function fetchEvents() {
+      loadedEvents = await fetchList('/events');
+      pastLast(loadedEvents, e => isPast(e.event_date), (a, b) => new Date(a.event_date) - new Date(b.event_date));
+
+      $('sel-evt').innerHTML = '<option value="">-- Choose Event --</option>' +
+        loadedEvents.map(e => {
+          const past = isPast(e.event_date);
+          return `<option value="${e.event_id}" ${past ? 'disabled' : ''}>${esc(e.title)} ${past ? '(Past Event)' : ''}</option>`;
+        }).join('');
+
+      renderEventsTable(loadedEvents);
+      renderCalendar();
+    }
+
+    function renderEventsTable(data) {
+      renderRows('tbl-events', data, 5, 'No matching events found.', e => {
+        const past = isPast(e.event_date);
+        const url = gcalUrl(e.title, e.description, e.venue_name, e.event_date);
+        return `
+        <tr>
+          <td>#${e.event_id}</td>
+          <td><strong>${esc(e.title)}</strong> ${past ? '<span class="badge badge-past">Past Event</span>' : ''}</td>
+          <td>${fmtDateTime(e.event_date)}</td>
+          <td>${esc(e.venue_name || 'Main Venue')}</td>
+          <td>${past ? '<span class="badge badge-past">Closed</span>'
+                     : `<a href="${esc(url)}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">📅 Calendar</a>`}</td>
+        </tr>`;
+      });
+    }
+
+    function filterCustEvents() {
+      const q = $('search-cust-events').value.toLowerCase();
+      const status = $('filter-cust-event-status').value;
+      renderEventsTable(loadedEvents.filter(e => {
+        const current = isPast(e.event_date) ? 'Past' : 'Upcoming';
+        const matches = e.title.toLowerCase().includes(q) || (e.venue_name && e.venue_name.toLowerCase().includes(q));
+        return matches && (status === '' || current === status);
+      }));
+    }
+    function resetCustEventFilter() { $('search-cust-events').value = ''; $('filter-cust-event-status').value = ''; renderEventsTable(loadedEvents); }
+
+    /* ---------- calendar ---------- */
+    function renderCalendar() {
+      const year = currentCalendarDate.getFullYear();
+      const month = currentCalendarDate.getMonth();
+      const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      setText('cal-month-year', `${names[month]} ${year}`);
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const today = new Date();
+      const thisMonth = today.getFullYear() === year && today.getMonth() === month;
+
+      let html = '<div class="cal-day empty"></div>'.repeat(firstDay);
+      for (let day = 1; day <= daysInMonth; day++) {
+        const events = loadedEvents.filter(e => {
+          const d = new Date(e.event_date);
+          return !isNaN(d) && d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+        }).map(m => {
+          const url = gcalUrl(m.title, m.description, m.venue_name, m.event_date);
+          return `<div class="cal-event" data-url="${esc(url)}" title="Add '${esc(m.title)}' to Google Calendar">📅 ${esc(m.title)}</div>`;
+        }).join('');
+        html += `<div class="cal-day ${thisMonth && today.getDate() === day ? 'today' : ''}"><div class="cal-day-num">${day}</div>${events}</div>`;
+      }
+      $('cal-grid').innerHTML = html;
+    }
+
+    $('cal-grid').addEventListener('click', (e) => {
+      const el = e.target.closest('.cal-event');
+      if (el) window.open(el.dataset.url, '_blank', 'noopener');
+    });
+
+    function changeMonth(delta) {
+      currentCalendarDate.setDate(1);
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    /* ---------- booking ---------- */
+    async function fetchTickets() { loadedTickets = await fetchList('/tickets'); }
+
+    /** Shows the chosen event's date/venue and a month calendar with its day highlighted. */
+    function renderEventPreview(eventId) {
+      const card = $('event-preview-card');
+      const e = eventId ? eventOf(eventId) : null;
+      const d = e ? new Date(String(e.event_date).replace(' ', 'T')) : null;
+      if (!e || !d || isNaN(d)) { card.style.display = 'none'; return; }
+
+      const longDate = d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+      const url = gcalUrl(e.title, e.description, e.venue_name, e.event_date);
+      $('event-info').innerHTML = `
+        <h3>${esc(e.title)}</h3>
+        <dl>
+          <dt>Date</dt><dd>${esc(longDate)}</dd>
+          <dt>Time</dt><dd>${esc(time)}</dd>
+          <dt>Venue</dt><dd>${esc(e.venue_name || 'Main Venue')}</dd>
+          ${e.description ? `<dt>Details</dt><dd>${esc(e.description)}</dd>` : ''}
+        </dl>
+        <a href="${esc(url)}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">📅 Add to Google Calendar</a>`;
+
+      const year = d.getFullYear(), month = d.getMonth();
+      const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      setText('mini-cal-title', `${names[month]} ${year}`);
+      let html = '<div class="cal-day empty"></div>'.repeat(new Date(year, month, 1).getDay());
+      for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day++) {
+        html += `<div class="cal-day ${day === d.getDate() ? 'selected' : ''}"><div class="cal-day-num">${day}</div></div>`;
+      }
+      $('mini-cal-grid').innerHTML = html;
+      card.style.display = 'block';
+    }
+
+    function handleEventSelect(eventId) {
+      renderEventPreview(eventId);
+      const sel = $('sel-tier');
+      sel.disabled = true;
+      if (!eventId) {
+        sel.innerHTML = '<option value="">-- Choose Event First --</option>';
+        calculateTotal();
+        return;
+      }
+      const tickets = loadedTickets.filter(t => same(t.event_id, eventId));
+      if (tickets.length) {
+        sel.innerHTML = '<option value="">-- Choose Ticket Tier --</option>' + tickets.map(t => `
+          <option value="${t.ticket_type_id}" data-price="${t.price}" ${num(t.quantity_available) > 0 ? '' : 'disabled'}>
+            ${esc(t.type_name)} — ${money(t.price)} (${t.quantity_available} left)
+          </option>`).join('');
+        sel.disabled = false;
+      } else {
+        sel.innerHTML = '<option value="">No ticket tiers available for this event</option>';
+      }
+      calculateTotal();
+    }
+
+    function calculateTotal() {
+      const sel = $('sel-tier');
+      const opt = sel.options[sel.selectedIndex];
+      if (!opt || !opt.dataset.price) { $('booking-total').value = '0.00'; return; }
+      const qty = num($('booking-qty').value) || 1;
+      $('booking-total').value = (parseFloat(opt.dataset.price) * qty).toFixed(2);
+    }
+
+    $('form-booking').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        customer_id: num(currentCustomerId),
+        ticket_type_id: num($('sel-tier').value),
+        quantity_booked: num($('booking-qty').value),
+        total_price: parseFloat($('booking-total').value),
+        booking_status: 'Upcoming'
+      };
+      try {
+        await api('/bookings', { method: 'POST', body: payload });
+        toast('Booking placed successfully!', 'success');
+        $('form-booking').reset();
+        $('sel-tier').disabled = true;
+        renderEventPreview(null);
+        loadAllData();
+      } catch (err) { toast(`Booking failed: ${err.message}`, 'error'); }
+    });
+
+    /* ---------- my bookings ---------- */
+    function bookingInfo(b) {
+      const ticket = ticketOf(b.ticket_type_id);
+      const evt = ticket ? eventOf(ticket.event_id) : null;
+      const past = !!(evt && isPast(evt.event_date));
+      let status = b.booking_status || 'Upcoming';
+      if (status !== 'Cancelled' && past) status = 'Completed';
+      return { tier: ticket ? ticket.type_name : `Tier #${b.ticket_type_id}`, title: evt ? evt.title : 'Unknown Event', past, status };
+    }
+
+    async function fetchMyBookings() {
+      const all = await fetchList('/bookings');
+      myBookings = all.filter(b => same(b.customer_id, currentCustomerId));
+      pastLast(myBookings, b => b.booking_status === 'Completed' || bookingInfo(b).past);
+
+      let upcoming = 0, completed = 0, spent = 0;
+      myBookings.forEach(b => {
+        const x = bookingInfo(b);
+        if (x.status !== 'Cancelled') {
+          x.past ? completed++ : upcoming++;
+          spent += parseFloat(b.total_price || 0);
+        }
+      });
+      setText('stat-my-bookings', myBookings.length);
+      setText('stat-upcoming', upcoming);
+      setText('stat-completed', completed);
+      setText('stat-spent', money(spent));
+      renderMyBookingsTable(myBookings);
+    }
+
+    function renderMyBookingsTable(data) {
+      renderRows('tbl-my-bookings', data, 8, 'No matching bookings found.', b => {
+        const x = bookingInfo(b);
+        const canCancel = x.status === 'Upcoming' && !x.past;
+        return `
+        <tr>
+          <td>#${b.booking_id}</td>
+          <td><strong>${esc(x.title)}</strong></td>
+          <td>${esc(x.tier)}</td>
+          <td>${b.quantity_booked}</td>
+          <td>${money(b.total_price)}</td>
+          <td>${statusBadge(x.status)}</td>
+          <td>${fmtDate(b.booking_date)}</td>
+          <td>${canCancel ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.booking_id})">Cancel</button>` : '<span style="color:#94a3b8;font-size:.75rem;">N/A</span>'}</td>
+        </tr>`;
+      });
+    }
+
+    function filterMyBookings() {
+      const q = $('search-my-bookings').value.toLowerCase();
+      const status = $('filter-my-booking-status').value;
+      renderMyBookingsTable(myBookings.filter(b => {
+        const x = bookingInfo(b);
+        const matches = b.booking_id.toString().includes(q) || x.title.toLowerCase().includes(q) || x.tier.toLowerCase().includes(q);
+        return matches && (status === '' || x.status === status);
+      }));
+    }
+    function resetMyBookingFilter() { $('search-my-bookings').value = ''; $('filter-my-booking-status').value = ''; renderMyBookingsTable(myBookings); }
+
+    async function cancelBooking(id) {
+      if (!confirm('Cancel this booking?')) return;
+      try {
+        await api(`/bookings/${id}`, { method: 'PUT', body: { booking_status: 'Cancelled' } });
+        toast('Booking cancelled.', 'success');
+        loadAllData();
+      } catch (e) { toast(`Cancel failed: ${e.message}`, 'error'); }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Registration - Event Ticketing System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <div class="auth-logo">📝</div>
+    <h2>Create your account</h2>
+    <p class="auth-sub">Register as a customer to book event tickets</p>
+    <div id="reg-alert" class="alert"></div>
+    <form id="form-register">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" required placeholder="John Doe">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" required placeholder="john@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-success btn-block">Create Account</button>
+    </form>
+    <div class="toggle-link">
+      Already registered? <a href="login.html">Back to Login</a>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    function showAlert(msg) {
+      const box = $('reg-alert');
+      box.innerText = msg;
+      box.style.display = 'block';
+    }
+
+    $('form-register').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        full_name: $('reg-name').value,
+        email: $('reg-email').value,
+        password: $('reg-password').value,
+        role: 'Customer'
+      };
+
+      try {
+        await api('/users', { method: 'POST', body: payload });
+        toast('Registration successful! Redirecting...', 'success');
+        setTimeout(() => { window.location.href = 'login.html'; }, 900);
+      } catch (err) {
+        showAlert(err.message.startsWith('HTTP') ? 'Registration failed.' : 'API connection error.');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organiser Dashboard - Event Ticketing System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="organiser">
+
+  <header class="app-header">
+    <div class="brand">📅 Event Organiser Dashboard</div>
+    <div class="user-box">
+      <span>Welcome, <strong id="lbl-name">Organiser</strong></span>
+      <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <nav class="navbar">
+    <button class="nav-link active" onclick="switchTab('events', this)">🎉 Events &amp; Schedules</button>
+    <button class="nav-link" onclick="switchTab('tickets', this)">🎟️ Ticket Tiers &amp; Availability</button>
+    <button class="nav-link" onclick="switchTab('bookings', this)">📋 Customer Bookings</button>
+  </nav>
+
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">🎉</div><div><span>My Events</span><h3 id="stat-events">0</h3></div></div>
+      <div class="stat-card"><div class="stat-icon">🎟️</div><div><span>Active Ticket Tiers</span><h3 id="stat-tickets">0</h3></div></div>
+      <div class="stat-card"><div class="stat-icon">📋</div><div><span>Total Bookings</span><h3 id="stat-bookings">0</h3></div></div>
+      <div class="stat-card"><div class="stat-icon">💰</div><div><span>Total Revenue</span><h3 id="stat-revenue">MYR 0.00</h3></div></div>
+    </div>
+
+    <!-- TAB 1: EVENTS -->
+    <div id="tab-events" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <span>🎉 Manage Events &amp; Schedules</span>
+          <div class="filter-group">
+            <select id="filter-event-status" class="select-filter" onchange="filterEvents()">
+              <option value="">All Events</option>
+              <option value="Upcoming">Upcoming</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <input type="text" id="search-events" class="search-bar" placeholder="🔍 Search events..." onkeyup="filterEvents()">
+            <button class="btn btn-secondary" onclick="resetEventFilter()">Clear</button>
+          </div>
+        </div>
+        <form id="form-event" class="form-panel">
+          <input type="hidden" id="event-edit-id">
+          <div class="form-grid">
+            <div class="form-group"><label>Event Title</label><input type="text" id="event-title" required placeholder="Tech Summit 2026"></div>
+            <div class="form-group"><label>Schedule Date &amp; Time</label><input type="datetime-local" id="event-date" required></div>
+            <div class="form-group"><label>Venue</label><select id="event-venue" required><option value="">Loading venues...</option></select></div>
+            <div class="form-group span-all"><label>Description</label><textarea id="event-description" placeholder="Provide event details..."></textarea></div>
+          </div>
+          <button type="submit" class="btn btn-success" id="btn-event-save">Save Event</button>
+          <button type="button" class="btn btn-secondary" onclick="resetEventForm()">Cancel</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Title</th><th>Schedule</th><th>Venue</th><th>Description</th><th>Actions</th></tr></thead>
+            <tbody id="tbl-events"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: TICKETS -->
+    <div id="tab-tickets" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>🎟️ Manage Ticket Tiers &amp; Availability</span>
+          <div class="filter-group">
+            <input type="text" id="search-tickets" class="search-bar" placeholder="🔍 Search tickets..." onkeyup="filterTickets()">
+            <button class="btn btn-secondary" onclick="resetTicketFilter()">Clear</button>
+          </div>
+        </div>
+        <form id="form-ticket" class="form-panel">
+          <input type="hidden" id="ticket-edit-id">
+          <div class="form-grid">
+            <div class="form-group"><label>Select Event</label><select id="ticket-event" required><option value="">-- Choose Event --</option></select></div>
+            <div class="form-group"><label>Tier Name</label><input type="text" id="ticket-name" required placeholder="VIP / General / Standard"></div>
+            <div class="form-group"><label>Price (MYR)</label><input type="number" step="0.01" id="ticket-price" required placeholder="150.00"></div>
+            <div class="form-group"><label>Quantity Available</label><input type="number" id="ticket-quantity" required min="0" placeholder="100"></div>
+          </div>
+          <button type="submit" class="btn btn-success" id="btn-ticket-save">Save Ticket Tier</button>
+          <button type="button" class="btn btn-secondary" onclick="resetTicketForm()">Cancel</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tier ID</th><th>Event</th><th>Tier Name</th><th>Price</th><th>Available</th><th>Actions</th></tr></thead>
+            <tbody id="tbl-tickets"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: BOOKINGS -->
+    <div id="tab-bookings" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>📋 Relevant Customer Bookings</span>
+          <div class="filter-group">
+            <select id="filter-org-booking-status" class="select-filter" onchange="filterBookings()">
+              <option value="">All Statuses</option>
+              <option value="Upcoming">Upcoming</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <input type="text" id="search-bookings" class="search-bar" placeholder="🔍 Search bookings..." onkeyup="filterBookings()">
+            <button class="btn btn-secondary" onclick="resetBookingFilter()">Clear</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Booking</th><th>Customer</th><th>Event</th><th>Tier</th><th>Qty</th><th>Total</th><th>Status</th><th>Booked On</th></tr></thead>
+            <tbody id="tbl-bookings"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let currentOrganiserId = null;
+    let eventsList = [], venuesList = [], ticketsList = [], bookingsList = [], usersList = [];
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole(['Organiser', 'Administrator'], 'Organiser')) return;
+      currentOrganiserId = localStorage.getItem('user_id');
+      try { usersList = listFrom(await api('/users')); } catch (e) { usersList = []; }
+      await fetchVenues();
+      await fetchEvents();
+      await fetchTickets();
+      fetchBookings();
+    });
+
+    const eventOf = id => eventsList.find(e => same(e.event_id, id));
+    const ticketOf = id => ticketsList.find(t => same(t.ticket_type_id, id));
+
+    /* ---------- venues ---------- */
+    async function fetchVenues() {
+      venuesList = await fetchList('/venues');
+      $('event-venue').innerHTML = '<option value="">-- Choose Venue --</option>' +
+        venuesList.map(v => `<option value="${v.venue_id}">${esc(v.venue_name)} (Cap: ${esc(v.capacity)})</option>`).join('');
+    }
+
+    /* ---------- events ---------- */
+    async function fetchEvents() {
+      const all = await fetchList('/events');
+      eventsList = all.filter(e => !currentOrganiserId || same(e.organiser_id, currentOrganiserId));
+      pastLast(eventsList, e => isPast(e.event_date), (a, b) => new Date(a.event_date) - new Date(b.event_date));
+      setText('stat-events', eventsList.length);
+
+      $('ticket-event').innerHTML = '<option value="">-- Choose Event --</option>' +
+        eventsList.map(e => `<option value="${e.event_id}">${esc(e.title)} ${isPast(e.event_date) ? '(Completed)' : ''}</option>`).join('');
+      renderEventsTable(eventsList);
+    }
+
+    function renderEventsTable(data) {
+      renderRows('tbl-events', data, 6, 'No events found.', e => {
+        const venue = venuesList.find(v => same(v.venue_id, e.venue_id));
+        const done = isPast(e.event_date);
+        return `
+        <tr>
+          <td>#${e.event_id}</td>
+          <td><strong>${esc(e.title)}</strong> ${done ? '<br><span class="badge badge-completed">Completed</span>' : ''}</td>
+          <td>${fmtDateTime(e.event_date)}</td>
+          <td>${esc(venue ? venue.venue_name : `Venue #${e.venue_id}`)}</td>
+          <td>${esc(e.description || 'No description')}</td>
+          <td class="actions">${done ? '<button class="btn btn-secondary btn-sm" disabled>Locked</button>' : `
+            <button class="btn btn-warning btn-sm" onclick="editEvent(${e.event_id})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteEvent(${e.event_id})">Delete</button>`}
+          </td>
+        </tr>`;
+      });
+    }
+
+    function filterEvents() {
+      const q = $('search-events').value.toLowerCase();
+      const status = $('filter-event-status').value;
+      renderEventsTable(eventsList.filter(e => {
+        const venue = venuesList.find(v => same(v.venue_id, e.venue_id));
+        const current = isPast(e.event_date) ? 'Completed' : 'Upcoming';
+        const matches = e.title.toLowerCase().includes(q) || (venue ? venue.venue_name : '').toLowerCase().includes(q) ||
+          (e.description && e.description.toLowerCase().includes(q));
+        return matches && (status === '' || current === status);
+      }));
+    }
+    function resetEventFilter() { $('search-events').value = ''; $('filter-event-status').value = ''; renderEventsTable(eventsList); }
+
+    function editEvent(id) {
+      const e = eventOf(id);
+      if (!e || isPast(e.event_date)) return;
+      $('event-edit-id').value = e.event_id;
+      $('event-title').value = e.title;
+      $('event-date').value = e.event_date ? e.event_date.replace(' ', 'T') : '';
+      $('event-venue').value = e.venue_id;
+      $('event-description').value = e.description || '';
+      setText('btn-event-save', 'Update Event');
+      $('form-event').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function resetEventForm() {
+      $('form-event').reset();
+      $('event-edit-id').value = '';
+      setText('btn-event-save', 'Save Event');
+    }
+
+    $('form-event').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const id = $('event-edit-id').value;
+      const payload = {
+        title: $('event-title').value,
+        event_date: $('event-date').value.replace('T', ' '),
+        venue_id: num($('event-venue').value),
+        organiser_id: num(currentOrganiserId || 2),
+        description: $('event-description').value
+      };
+      try {
+        await api(id ? `/events/${id}` : '/events', { method: id ? 'PUT' : 'POST', body: payload });
+        toast('Event saved!', 'success');
+        resetEventForm();
+        fetchEvents();
+      } catch (e) { toast(`Failed to save event: ${e.message}`, 'error'); }
+    });
+
+    async function deleteEvent(id) {
+      const e = eventOf(id);
+      if (e && isPast(e.event_date)) return;
+      if (!confirm('Delete event?')) return;
+      try {
+        await api(`/events/${id}`, { method: 'DELETE' });
+        toast('Event deleted.', 'success');
+        await fetchEvents();
+        fetchTickets();
+      } catch (err) { toast(`Failed to delete event: ${err.message}`, 'error'); }
+    }
+
+    /* ---------- tickets ---------- */
+    async function fetchTickets() {
+      const all = await fetchList('/tickets');
+      const ids = eventsList.map(e => num(e.event_id));
+      ticketsList = all.filter(t => ids.includes(num(t.event_id)));
+      pastLast(ticketsList, t => { const e = eventOf(t.event_id); return e && isPast(e.event_date); });
+      setText('stat-tickets', ticketsList.length);
+      renderTicketsTable(ticketsList);
+    }
+
+    function renderTicketsTable(data) {
+      renderRows('tbl-tickets', data, 6, 'No ticket tiers found.', t => {
+        const evt = eventOf(t.event_id);
+        const done = evt && isPast(evt.event_date);
+        return `
+        <tr>
+          <td>#${t.ticket_type_id}</td>
+          <td>${esc(evt ? evt.title : `Event #${t.event_id}`)} ${done ? '<br><span class="badge badge-completed">Locked</span>' : ''}</td>
+          <td><strong>${esc(t.type_name)}</strong></td>
+          <td>${money(t.price)}</td>
+          <td>${t.quantity_available}</td>
+          <td class="actions">${done ? '<button class="btn btn-secondary btn-sm" disabled>Locked</button>' : `
+            <button class="btn btn-warning btn-sm" onclick="editTicket(${t.ticket_type_id})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteTicket(${t.ticket_type_id})">Delete</button>`}
+          </td>
+        </tr>`;
+      });
+    }
+
+    function filterTickets() {
+      const q = $('search-tickets').value.toLowerCase();
+      renderTicketsTable(ticketsList.filter(t => {
+        const evt = eventOf(t.event_id);
+        return t.type_name.toLowerCase().includes(q) || (evt ? evt.title : '').toLowerCase().includes(q);
+      }));
+    }
+    function resetTicketFilter() { $('search-tickets').value = ''; renderTicketsTable(ticketsList); }
+
+    function editTicket(id) {
+      const t = ticketOf(id);
+      if (!t) return;
+      $('ticket-edit-id').value = t.ticket_type_id;
+      $('ticket-event').value = t.event_id;
+      $('ticket-name').value = t.type_name;
+      $('ticket-price').value = t.price;
+      $('ticket-quantity').value = t.quantity_available;
+      setText('btn-ticket-save', 'Update Ticket Tier');
+      $('form-ticket').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function resetTicketForm() {
+      $('form-ticket').reset();
+      $('ticket-edit-id').value = '';
+      setText('btn-ticket-save', 'Save Ticket Tier');
+    }
+
+    $('form-ticket').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const id = $('ticket-edit-id').value;
+      const payload = {
+        event_id: num($('ticket-event').value),
+        type_name: $('ticket-name').value,
+        price: parseFloat($('ticket-price').value),
+        quantity_available: num($('ticket-quantity').value)
+      };
+      try {
+        await api(id ? `/tickets/${id}` : '/tickets', { method: id ? 'PUT' : 'POST', body: payload });
+        toast('Ticket tier saved!', 'success');
+        resetTicketForm();
+        fetchTickets();
+      } catch (e) { toast(`Failed to save ticket tier: ${e.message}`, 'error'); }
+    });
+
+    async function deleteTicket(id) {
+      if (!confirm('Delete ticket tier?')) return;
+      try {
+        await api(`/tickets/${id}`, { method: 'DELETE' });
+        toast('Ticket tier deleted.', 'success');
+        fetchTickets();
+      } catch (e) { toast(`Failed to delete ticket tier: ${e.message}`, 'error'); }
+    }
+
+    /* ---------- bookings ---------- */
+    async function fetchBookings() {
+      const all = await fetchList('/bookings');
+      const ids = ticketsList.map(t => num(t.ticket_type_id));
+      bookingsList = all.filter(b => ids.includes(num(b.ticket_type_id)));
+      pastLast(bookingsList, b => b.booking_status === 'Completed');
+
+      setText('stat-bookings', bookingsList.length);
+      const revenue = bookingsList.filter(b => b.booking_status !== 'Cancelled')
+        .reduce((sum, b) => sum + parseFloat(b.total_price || 0), 0);
+      setText('stat-revenue', money(revenue));
+      renderBookingsTable(bookingsList);
+    }
+
+    function bookingInfo(b) {
+      const ticket = ticketOf(b.ticket_type_id);
+      const evt = ticket ? eventOf(ticket.event_id) : null;
+      const cust = usersList.find(u => same(u.user_id, b.customer_id));
+      return {
+        tier: ticket ? ticket.type_name : `Tier #${b.ticket_type_id}`,
+        title: evt ? evt.title : 'Unknown Event',
+        customer: cust ? cust.full_name : `Customer #${b.customer_id}`
+      };
+    }
+
+    function renderBookingsTable(data) {
+      renderRows('tbl-bookings', data, 8, 'No relevant bookings found.', b => {
+        const x = bookingInfo(b);
+        return `
+        <tr>
+          <td>#${b.booking_id}</td>
+          <td><strong>${esc(x.customer)}</strong> <span style="color:var(--muted);font-size:.75rem;">#${b.customer_id}</span></td>
+          <td><strong>${esc(x.title)}</strong></td>
+          <td>${esc(x.tier)}</td>
+          <td>${b.quantity_booked}</td>
+          <td>${money(b.total_price)}</td>
+          <td>${statusBadge(b.booking_status)}</td>
+          <td>${fmtDate(b.booking_date)}</td>
+        </tr>`;
+      });
+    }
+
+    function filterBookings() {
+      const q = $('search-bookings').value.toLowerCase();
+      const status = $('filter-org-booking-status').value;
+      renderBookingsTable(bookingsList.filter(b => {
+        const x = bookingInfo(b);
+        const matches = b.booking_id.toString().includes(q) || b.customer_id.toString().includes(q) ||
+          x.customer.toLowerCase().includes(q) || x.title.toLowerCase().includes(q) || x.tier.toLowerCase().includes(q);
+        return matches && (status === '' || b.booking_status === status);
+      }));
+    }
+    function resetBookingFilter() { $('search-bookings').value = ''; $('filter-org-booking-status').value = ''; renderBookingsTable(bookingsList); }
+  </script>
+</body>
+</html>

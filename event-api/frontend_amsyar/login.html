@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Event Ticketing System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+
+  <div class="auth-card">
+    <div class="auth-logo">🎟️</div>
+    <h2>Welcome back</h2>
+    <p class="auth-sub">Sign in to your Event Ticketing account</p>
+    <div id="login-alert" class="alert"></div>
+    <form id="form-login">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" required placeholder="admin@eventticketing.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+    </form>
+    <div class="toggle-link">
+      Need an account? <a href="register.html">Register as Customer</a>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const role = localStorage.getItem('role');
+      if (role) redirectByRole(role);
+    });
+
+    function showAlert(msg) {
+      const box = $('login-alert');
+      box.innerText = msg;
+      box.style.display = 'block';
+    }
+
+    $('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $('login-email').value.trim();
+      const password = $('login-password').value.trim();
+
+      try {
+        const users = await fetchList('/users');
+        const user = users.find(u => u.email === email && u.password === password);
+        if (user) {
+          localStorage.setItem('user_id', user.user_id);
+          localStorage.setItem('full_name', user.full_name);
+          localStorage.setItem('role', user.role);
+          redirectByRole(user.role);
+        } else {
+          showAlert('Invalid email or password.');
+        }
+      } catch (err) {
+        showAlert('Cannot connect to backend server API.');
+      }
+    });
+  </script>
+</body>
+</html>
