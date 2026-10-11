@@ -1,0 +1,24 @@
+RewriteEngine On
+
+# Calendar Export Endpoint
+RewriteRule ^events/([0-9]+)/calendar/?$ calendar.php?event_id=$1 [QSA,L]
+
+# Users Endpoints
+RewriteRule ^users/?$ users.php [QSA,L]
+RewriteRule ^users/([0-9]+)/?$ users.php?id=$1 [QSA,L]
+
+# Events Endpoints
+RewriteRule ^events/?$ events.php [QSA,L]
+RewriteRule ^events/([0-9]+)/?$ events.php?id=$1 [QSA,L]
+
+# Venues Endpoints
+RewriteRule ^venues/?$ venues.php [QSA,L]
+RewriteRule ^venues/([0-9]+)/?$ venues.php?id=$1 [QSA,L]
+
+# Bookings Endpoints
+RewriteRule ^bookings/?$ bookings.php [QSA,L]
+RewriteRule ^bookings/([0-9]+)/?$ bookings.php?id=$1 [QSA,L]
+
+# Tickets Endpoints
+RewriteRule ^tickets/?$ tickets.php [QSA,L]
+RewriteRule ^tickets/([0-9]+)/?$ tickets.php?id=$1 [QSA,L]
